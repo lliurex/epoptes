@@ -1,0 +1,526 @@
+epoptes (1:0.5.7-1+lliurex2) bionic; urgency=medium
+
+  * first bionic release
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Mon, 30 Apr 2018 17:52:18 +0200
+
+epoptes (1:0.5.7-1+lliurex1) xenial; urgency=high
+
+  * We are so far away from epoptes main develpment that this is the ONLY way
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Thu, 16 Nov 2017 13:34:17 +0100
+
+epoptes (0.5.9-lliurex37) xenial; urgency=high
+
+  * Removing log errors
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Mon, 13 Nov 2017 18:04:34 +0100
+
+epoptes (0.5.9-lliurex36) xenial; urgency=high
+
+  * Making sure a failed fetch_certificate doesn't overwrite current crt file.
+    Executing epoptes-client -c in server mchine shouldnt break crt file either
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Wed, 08 Nov 2017 17:35:43 +0100
+
+epoptes (0.5.9-lliurex35) xenial; urgency=medium
+
+  * Fix label 'Groups' translation
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Tue, 07 Nov 2017 13:20:55 +0100
+
+epoptes (0.5.9-lliurex34) xenial; urgency=high
+
+  * Optimize epoptes-client to start control in slowly starting services 
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Thu, 19 Oct 2017 08:49:50 +0200
+
+epoptes (0.5.9-lliurex33) xenial; urgency=high
+
+  * Adding new function to force server certified download if it does not exists in client
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Fri, 13 Oct 2017 12:52:41 +0200
+
+epoptes (0.5.9-lliurex32) xenial; urgency=high
+
+  * Fix bug to open socat in epoptes-client instruction 
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Fri, 13 Oct 2017 11:49:34 +0200
+
+epoptes (0.5.9-lliurex31) xenial; urgency=high
+
+  * Fix bug in test to need certificate 
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Fri, 13 Oct 2017 11:08:16 +0200
+
+epoptes (0.5.9-lliurex30) xenial; urgency=high
+
+  * Adding reload certificate server file 
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Wed, 27 Sep 2017 10:29:58 +0200
+
+epoptes (0.5.9-lliurex29) xenial; urgency=high
+
+  * Adding sleep to wait all services actives 
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Fri, 15 Sep 2017 12:35:19 +0200
+
+epoptes (0.5.9-lliurex28) xenial; urgency=high
+
+  * Fixing old log file
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Fri, 15 Sep 2017 12:13:31 +0200
+
+epoptes (0.5.9-lliurex27) xenial; urgency=medium
+
+  * Removed deprecated locale
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Thu, 22 Jun 2017 09:16:50 +0200
+
+epoptes (0.5.9-lliurex26) xenial; urgency=high
+
+  * updating wol.py from epoptes 0.5.10
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Tue, 06 Jun 2017 12:23:58 +0200
+
+epoptes (0.5.9-lliurex25) xenial; urgency=high
+
+  * log fixes
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Mon, 05 Jun 2017 14:39:32 +0200
+
+epoptes (0.5.9-lliurex24) xenial; urgency=medium
+
+  * Added metainfo
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Wed, 10 May 2017 17:43:56 +0200
+
+epoptes (0.5.9-lliurex23) xenial; urgency=high
+
+  * epoptes-client debug fixes
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Tue, 25 Apr 2017 18:02:20 +0200
+
+epoptes (0.5.9-lliurex22) xenial; urgency=high
+
+  * Dummy upgrade
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Fri, 21 Apr 2017 14:29:39 +0200
+
+epoptes (0.5.9-lliurex21) xenial; urgency=high
+
+  * Fix Bug in save JSON groups 
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Mon, 20 Feb 2017 13:14:32 +0100
+
+epoptes (0.5.9-lliurex20) xenial; urgency=high
+
+  * Adding new function to share group in n4d variable and set user
+    default at login screen
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Thu, 26 Jan 2017 12:45:12 +0100
+
+epoptes (0.5.9-lliurex19) xenial; urgency=high
+
+  * Eliminate epoptes.txt in user-home 
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Wed, 11 Jan 2017 08:55:44 +0100
+
+epoptes (0.5.9-lliurex18) xenial; urgency=high
+
+  * Updated with solved bugs from trusty
+
+ -- Daniel Duran Vecino <netadmin@localhost.localdomain>  Thu, 22 Dec 2016 09:20:50 +0100
+
+epoptes (0.5.9-lliurex8) xenial; urgency=high
+
+  * Fix bug in unblock internet from a client to other client 
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Wed, 07 Dec 2016 12:47:00 +0100
+
+epoptes (0.5.9-lliurex7) xenial; urgency=medium
+
+  * Add new test to avoid infinite loop when disconnect thin-clients 
+
+ -- M.Angel Juan <m.angel.juan@gmail.com>  Thu, 02 Jun 2016 11:31:56 +0200
+
+epoptes (0.5.9-lliurex6) xenial; urgency=medium
+
+  * Added option Server=server to default config
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Wed, 11 May 2016 17:15:15 +0200
+
+epoptes (0.5.9-lliurex5) xenial; urgency=medium
+
+  * Updated dependencies from iproute -> iproute2
+
+ -- M.Angel Juan <m.angel.juan@gmail.com>  Tue, 10 May 2016 16:58:07 +0200
+
+epoptes (0.5.9-lliurex4ubuntu1) xenial; urgency=high
+
+  * Fix certificate generation 
+
+ -- Juanma Navarro Mañez <juanma1980@gmail.com>  Tue, 10 May 2016 11:53:32 +0200
+
+epoptes (0.5.9-lliurex4) xenial; urgency=medium
+
+  * Fix Epoptes client gracefully exitting
+
+ -- M.Angel Juan <m.angel.juan@gmail.com>  Thu, 28 Apr 2016 09:14:27 +0200
+
+epoptes (0.5.9-lliurex3) xenial; urgency=high
+
+  * fix error in grep to find epoptes user process 
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Fri, 22 Apr 2016 11:32:46 +0200
+
+epoptes (0.5.9-lliurex2) xenial; urgency=high
+
+  * fix bug to not kill all process 
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Fri, 22 Apr 2016 10:17:21 +0200
+
+epoptes (0.5.9-lliurex1) xenial; urgency=high
+
+  * Fix bug in exit session to finish socat connection
+
+ -- Daniel Duran Vecino <daduve@gmail.com>  Thu, 21 Apr 2016 13:27:06 +0200
+
+epoptes (0.5.9) xenial; urgency=medium
+
+  *  Patched to hide teacher clients when one teacher isn't promoted
+
+ -- M.Angel Juan <m.angel.juan@gmail.com>  Tue, 29 Mar 2016 15:05:09 +0200
+
+epoptes (0.5.8) xenial; urgency=medium
+
+  * First release for xenial
+
+ -- M.Angel Juan <m.angel.juan@gmail.com>  Wed, 03 Feb 2016 11:51:34 +0100
+
+epoptes (0.5.7-1+lliurex9) trusty; urgency=high
+
+  * Clients try to reconect when connection is lost
+
+ -- Miguel Angel <m.angel.juan@gmail.com>  Tue, 19 Jan 2016 16:21:41 +0100
+
+epoptes (0.5.7-1+lliurex8) trusty; urgency=medium
+
+  * changed startup logic
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Thu, 25 Jun 2015 11:50:25 +0200
+
+epoptes (0.5.7-1+lliurex7) trusty; urgency=high
+
+  * Added translations
+
+ -- Angel Berlanas Vicente <angel.berlanas@gmail.com>  Mon, 25 May 2015 12:28:29 +0200
+
+epoptes (0.5.7-1+lliurex6) trusty; urgency=high
+
+  * Added translation
+
+ -- Angel Berlanas Vicente <angel.berlanas@gmail.com>  Mon, 25 May 2015 12:07:58 +0200
+
+epoptes (0.5.7-1+lliurex5) trusty; urgency=high
+
+  * Adding standalone client support
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Tue, 12 May 2015 12:15:39 +0200
+
+epoptes (0.5.7-1+lliurex4) trusty; urgency=medium
+
+  * Added block & unblock internet buttons to gui
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Wed, 04 Feb 2015 13:34:26 +0100
+
+epoptes (0.5.7-1+lliurex3) trusty; urgency=medium
+
+  * Adding "block & unblock internet" functionality
+    (Needs as a 'remote dependency' n4d-server-plugins >= 0.94.2)
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Tue, 03 Feb 2015 15:44:06 +0100
+
+epoptes (0.5.7-1+lliurex2) trusty; urgency=medium
+
+  * New login dialog
+  * client to client fixes
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Mon, 19 Jan 2015 09:47:23 +0100
+
+epoptes (0.5.7-1+lliurex1) trusty; urgency=high
+
+  * dummy upgrade
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Thu, 30 Oct 2014 13:55:32 +0100
+
+epoptes (0.5.7-1~ubuntu12.04.2~ppa7) trusty; urgency=trusty
+
+  * Trusty release
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Mon, 13 Oct 2014 10:18:20 +0200
+
+epoptes (0.5.7-1~ubuntu12.04.2~ppa5) precise; urgency=high
+
+  * DUMMY UPGRADE
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Thu, 02 Oct 2014 11:41:36 +0200
+
+epoptes (0.5.7-1~ubuntu12.04.2~ppa4) precise; urgency=high
+
+  * Fixed group saving
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Thu, 02 Oct 2014 11:32:50 +0200
+
+epoptes (0.5.7-1~ubuntu12.04.2~ppa3) precise; urgency=high
+
+  * Updated to create configuration folder at $USER_HOME 
+  * Fixed "Quit" main menu
+
+ -- Angel Berlanas Vicente <angel.berlanas@gmail.com>  Wed, 02 Jul 2014 13:33:17 +0200
+
+epoptes (0.5.7-1~ubuntu12.04.2~ppa1) precise; urgency=high
+
+  * Updated to use n4d to solve the GUI problem of teachers
+
+ -- Angel Berlanas Vicente <angel.berlanas@gmail.com>  Tue, 04 Feb 2014 16:33:09 +0100
+
+epoptes (0.5.7-1~ubuntu12.04.1) precise; urgency=low
+
+  * Auto build.
+
+ -- Alkis Georgopoulos <alkisg@gmail.com>  Mon, 25 Nov 2013 04:18:29 +0000
+
+epoptes (0.5.7-1) unstable; urgency=low
+
+  * New upstream version:
+    - Add a config option for grabbing the keyboard and the mouse pointer
+      when assisting a user (LP: #977637).
+    - Preserve the clients selection when a client connects, disconnects, or
+      is removed from the selected group (LP: #1045065).
+    - Send WOL to all interfaces (LP: #1157241).
+    - Fix epoptes crashing when running as root (LP: #977049).
+    - Fix logout in Mate.
+    - Improve the thumbnails zooming functionality.
+    - Prefer pactl for muting when available (LP: #1026331).
+    - Grab local input when assisting a client (LP: #977637).
+    - Support xtightvncviewer as an alternative to xvnc4viewer.
+    - Prefer ssvncviewer over xvnc4viewer (LP: #1030853).
+
+  * epoptes:
+    - Add python-openssl as an epoptes dependency (Closes: #703512).
+    - Start the epoptes service later for LDAP/Samba (LP: #1054665).
+  * epoptes-client:
+    - Enable Wake On Lan when ethtool is installed. Add Suggests on ethtool.
+  * debian/control:
+    - Update Standards-Version to 3.9.5, no changes necessary. 
+
+ -- Vagrant Cascadian <vagrant@debian.org>  Sun, 24 Nov 2013 16:58:37 -0800
+
+epoptes (0.5.6-1) unstable; urgency=low
+
+  * New upstream version:
+    - Support ssvnc as an alternative to xvnc4viewer.
+    - Disable alias editing for clients in the 'Detected' group.
+    - Correctly parse info for clients with multiple VGAs (LP: #1017140).
+    - Prefix "-" to fullscreen parameter (LP: #1015239).
+
+ -- Alkis Georgopoulos <alkisg@gmail.com>  Wed, 27 Jun 2012 21:11:16 +0300
+
+epoptes (0.5.5-1) unstable; urgency=low
+
+  * New upstream version:
+    - Split vncport to vncviewerport and vncserverport (LP: #1013808).
+    - New translation: Somali (so).
+
+ -- Vagrant Cascadian <vagrant@debian.org>  Fri, 15 Jun 2012 14:10:45 -0700
+
+epoptes (0.5.4-1) unstable; urgency=low
+
+  * New upstream version:
+    - Remove workaround for bug fixed in twisted.
+    - Ensure that epoptes-client is actually booted to LTSP before assuming it
+      is operating as a Fat client.
+    - New translations: Arabic (ar), Catalan (ca), Czech (cs), Galician (gl),
+      Lithuanian (lt), Turkish (tr), Chinese (Simplified) (zh_CN)
+    - Updated translations: Afrikaans (af), Hebrew (he), Malay (ms), 
+      Norwegian Bokmal (nb), Dutch (nl), Portuguese (pt), Russian (ru)
+
+ -- Vagrant Cascadian <vagrant@debian.org>  Sun, 10 Jun 2012 10:58:01 -0700
+
+epoptes (0.5.3-1) unstable; urgency=low
+
+  * Use better checks to detect LTSP clients (LP: #975784).
+  * Correct start-stop-daemon parameters (LP: #975433).
+  * Add Afrikaans, English (Australia), Malay and Portuguese translations.
+    Many thanks to the translators!
+
+ -- Alkis Georgopoulos <alkisg@gmail.com>  Mon, 09 Apr 2012 18:58:03 +0300
+
+epoptes (0.5.2-1) unstable; urgency=low
+
+  * Correctly match URLs in execute function.
+  * Introduce EPOPTES_CLIENT_VERIFY_CERTIFICATE lts.conf option.
+  * Make get-display work with older gdm versions (LP: #966060).
+  * findUnusedPort: drop optional 'base' parameter as it may cause delays.
+  * Add Danish translation. Many thanks to the translators!
+
+ -- Alkis Georgopoulos <alkisg@gmail.com>  Sun, 01 Apr 2012 22:09:31 +0300
+
+epoptes (0.5.1-1) unstable; urgency=low
+
+  * New upstream version:
+    - Updated translations.
+
+ -- Vagrant Cascadian <vagrant@debian.org>  Fri, 23 Mar 2012 11:05:43 -0700
+
+epoptes (0.5.0-0ubuntu1) precise; urgency=low
+
+  * Fix typo in remote-assistance (LP: #961907).
+  * Allow more than one epoptes instances to monitor/assist clients.
+  * screenshot: don't crash if the connection breaks (LP: #954441).
+  * epoptes-client: depend on python-gtk2, suggest ssvnc.
+  * Move remote-assistance to epoptes-client to match dependencies.
+  * Hide the remote assistance menu item when epoptes-client is not installed.
+  * Fix windowed broadcast.
+  * get-display: don't fail if DISPLAY has an invalid (cached) value.
+  * Avoid disconnecting clients on broken DNS configurations (LP: #949055).
+  * Fix "unlock" trunk regression (LP: 959522).
+  * Remove the unused Constants class.
+  * Allow pango markup in message sending.
+  * Support ssvncviewer to cope with 24bpp displays (LP: #953512).
+  * Increase certificate validity to 10 years (LP: #954076).
+  * Point to epoptes(1), not (8), in README (LP: #953493).
+  * Use a VNC password instead of allowing only localnet (LP: #937820).
+  * Don't depend on zenity (LP: #955452).
+  * Make `epoptes-client -c` contact localhost in fat chroots.
+  * Allow epoptes-clients using XDMCP (LP: #950720).
+  * Permit VNC'ing to the login screen (LP: #889669).
+  * Fix "mute/unmute not found" error (LP: #953521).
+  * Add Brazilian Portuguese, Hebrew, Slovenian, Ukrainian and Vietnamese
+    translations. Many thanks to the translators!
+
+ -- Alkis Georgopoulos <alkisg@gmail.com>  Tue, 20 Mar 2012 16:43:32 +0200
+
+epoptes (0.4.4-1) unstable; urgency=low
+
+  [ Alkis Georgopoulos ]
+  * screenshot: exit cleanly when X isn't available.
+  * Handle late connectionLost events better.
+  * Replace the View menu with the Labels menu.
+  * Ability to show real names instead of usernames.
+  * Don't use epoptes-client.init on LTSP 5.3.
+  * Get the active display when executing root commands.
+  * Remember more user settings (labels, history).
+  * Don't hang on close, on Ubuntu 12.04.
+  * Mark epoptes as the owner of /etc/epoptes (Closes: #661083).
+  * Extract shell code from python scripts for maintainability.
+  * Don't crash when clients with a bad certificate connect (LP: #940114).
+  * Add Spanish and Swedish translations.
+    Many thanks to the translators!
+
+  [ Vagrant Cascadian ]
+  * Update Standards-Version to 3.9.3, no changes necessary. 
+
+ -- Vagrant Cascadian <vagrant@debian.org>  Sun, 04 Mar 2012 13:58:00 -0800
+
+epoptes (0.4.3-0ubuntu1) precise; urgency=low
+
+  * New icons!
+  * Add some handy actions in the toolbar.
+  * Move the Labels sub-menu under the 'View' menu.
+  * Make the lock screen message translatable.
+  * Users couldn't launch epoptes when SOCKET_GROUP=their primary groups.
+  * Add Polish and Hungarian translations.
+    Many thanks to the translators!
+
+ -- Alkis Georgopoulos <alkisg@gmail.com>  Wed, 22 Feb 2012 22:39:47 +0200
+
+epoptes (0.4.2-1) unstable; urgency=low
+
+  * If epoptes is ran from a thin client, don't display that client.
+  * Background epoptes-client when running from if-up.
+  * Log less, and let twistd handle the rotation.
+  * Translation updates.
+  * Don't fail when the last thumbnail byte is a space.
+
+ -- Alkis Georgopoulos <alkisg@gmail.com>  Mon, 06 Feb 2012 23:23:38 +0200
+
+epoptes (0.4.1-1) unstable; urgency=low
+
+  * Optimize the thumbnails logic.
+  * Add the ability to broadcast the screen in a window.
+  * epoptes: Add dependency on adduser (Closes: #656117).
+  * Recommend openssl for epoptes-client.
+  * Fix a mutable default value gotcha in Group class.
+  * Add Dutch and Finnish translations.
+    Many thanks to the translators!
+
+ -- Alkis Georgopoulos <alkisg@gmail.com>  Wed, 01 Feb 2012 10:05:12 +0200
+
+epoptes (0.4.0-1) unstable; urgency=low
+
+  * Generate an OpenSSL certificate valid for 5 years instead of 1 month.
+  * Implement client groups.
+  * Fix active display detection in recent KDE versions.
+  * Fix logout in XFCE.
+  * Add French, German, Russian and Slovak translations.
+    Many thanks to the translators!
+
+ -- Alkis Georgopoulos <alkisg@gmail.com>  Sat, 14 Jan 2012 22:14:20 +0200
+
+epoptes (0.3.2-1) unstable; urgency=low
+
+  * Use cairo for screenshot resizing on the X server, to save bandwidth.
+  * Allow screenshot interval to be larger in cases of extreme load.
+  * Install a logrotate configuration file.
+  * Export LTSP_CLIENT_MAC in thin client sessions.
+  * Exit epoptes-client when X is unavailable.
+  * Stop broadcasts: only kill our child x11vnc process.
+
+ -- Alkis Georgopoulos <alkisg@gmail.com>  Mon, 14 Nov 2011 10:37:32 +0200
+
+epoptes (0.3.1-1) experimental; urgency=low
+
+  * Initial upload to Debian (Closes: #646971).
+    - Use SSL connections by default.
+    - Replace vinagre with xvnc4viewer.
+    - Fix logout in LXDE.
+
+  * Set Maintainer to Epoptes Developers.
+  * Add Alkis Georgopoulos, Fotis Tsamis and Vagrant Cascadian to Uploaders.
+  * Add dependency on python-dbus.
+  * Add dependency on bsdmainutils, needed for session broadcasting.
+  * Recommend xterm for both client and server.
+  * Improve long descriptions.
+  * Update to Standards-Version 3.9.2.
+  * Switch to using dh --with python2.
+  * Switch to source format: 3.0 (quilt).
+  * Switch to dep5 formatted debian/copyright.
+
+ -- Vagrant Cascadian <vagrant@debian.org>  Fri, 04 Nov 2011 22:48:18 -0700
+
+epoptes (0.3.0) lucid; urgency=low
+
+  * Switch from upstart to sysvinit, for Debian compatibility
+  * Use group epoptes instead of admin for the control socket
+
+ -- Fotis Tsamis <ftsamis@gmail.com>  Tue, 18 Oct 2011 22:05:50 +0300
+
+epoptes (0.2.0) lucid; urgency=low
+
+  * Fix console-based remote assistance
+  * Remove Users and Group panes
+  * Basic implementation of configuration files
+  * Add a menu for client monitoring
+  * Allow the execute command dialog to xdg-open URLs
+  * Smoother text fade-in in lock screen
+  * Fix client compatibility check
+
+ -- Fotis Tsamis <ftsamis@gmail.com>  Fri, 14 Oct 2011 09:47:54 +0300
+
+epoptes (0.1.0) lucid; urgency=low
+
+  * Initial release
+
+ -- Fotis Tsamis <ftsamis@gmail.com>  Thu, 06 Oct 2011 00:47:26 +0300
