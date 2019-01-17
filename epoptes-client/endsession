@@ -1,0 +1,164 @@
+#!/bin/sh
+###########################################################################
+# Requests a logout, reboot or shutdown.
+# Currently it supports Gnome, KDE, XFCE and LXDE.
+# Usage: endsession --logout|--reboot|--shutdown
+#
+# Copyright (C) 2011 Alkis Georgopoulos <alkisg@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# On Debian GNU/Linux systems, the complete text of the GNU General
+# Public License can be found in `/usr/share/common-licenses/GPL'.
+###########################################################################
+
+die() {
+    echo "$@" >&2
+    exit 1
+}
+
+is_root() {
+    test $(id -u) -eq 0
+}
+
+is_ltsp() {
+    test -n "$LTSP_CLIENT"
+}
+
+do_logout() {
+    # Reset the xprop in case the user asks for a reboot, cancels it
+    # (e.g. unsaved work), and then he asks for a logout instead.
+    if [ $action = "logout" ] && is_ltsp; then
+        # LTSP_LOGOUT_ACTION might not exist, but we don't care
+        xprop -root -remove LTSP_LOGOUT_ACTION 2>/dev/null
+    fi
+
+    # Gnome
+    dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.gnome.SessionManager /org/gnome/SessionManager \
+      org.gnome.SessionManager.Logout uint32:1 2>&1 && return
+
+    # KDE
+    dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.kde.ksmserver /KSMServer org.kde.KSMServerInterface.logout \
+      int32:0 int32:0 int32:0 2>&1 && return
+
+    # Mate
+    dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.mate.SessionManager /org/mate/SessionManager \
+      org.mate.SessionManager.Logout uint32:1 2>&1 && return
+
+    # XFCE
+    xfce4-session-logout --logout 2>&1 && return
+
+    # LXDE
+    test -n "$_LXSESSION_PID" && kill "$_LXSESSION_PID" && return
+
+    die "I don't know how to logout in this environment"
+}
+
+do_reboot() {
+    if is_root; then
+        reboot && return
+    elif is_ltsp; then
+        # Notify ldm that we want to reboot after logoff
+        xprop -root -f LTSP_LOGOUT_ACTION 8s -set LTSP_LOGOUT_ACTION REBOOT
+        do_logout && return
+    fi
+
+    # Gnome
+    dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.gnome.SessionManager /org/gnome/SessionManager \
+      org.gnome.SessionManager.RequestReboot 2>&1 && return
+
+    # KDE
+    dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.kde.ksmserver /KSMServer org.kde.KSMServerInterface.logout \
+      int32:0 int32:1 int32:0 2>&1 && return
+    
+    # Mate
+    dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.mate.SessionManager /org/mate/SessionManager \
+      org.mate.SessionManager.RequestReboot 2>&1 && return
+    
+    # XFCE and LXDE 
+    dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.freedesktop.PowerManagement /org/freedesktop/PowerManagement \
+      org.freedesktop.PowerManagement.Reboot 2>&1 && return
+
+    # ConsoleKit is the last resort since it doesn't allow inhibiting
+    dbus-send --system --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.freedesktop.ConsoleKit /org/freedesktop/ConsoleKit/Manager \
+      org.freedesktop.ConsoleKit.Manager.Restart 2>&1 && return
+
+    die "I don't know how to reboot in this environment"
+}
+
+do_shutdown() {
+    if is_root; then
+        poweroff && return
+    elif is_ltsp; then
+        # Notify ldm that we want to poweroff after logoff
+        xprop -root -f LTSP_LOGOUT_ACTION 8s -set LTSP_LOGOUT_ACTION HALT
+        do_logout && return
+    fi
+
+    # Gnome
+    dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.gnome.SessionManager /org/gnome/SessionManager \
+      org.gnome.SessionManager.RequestShutdown 2>&1 && return
+
+    # KDE
+    dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.kde.ksmserver /KSMServer org.kde.KSMServerInterface.logout \
+      int32:0 int32:2 int32:0 2>&1 && return
+    
+    # Mate
+    dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.mate.SessionManager /org/mate/SessionManager \
+      org.mate.SessionManager.RequestShutdown 2>&1 && return
+
+    # XFCE and LXDE 
+    dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.freedesktop.PowerManagement /org/freedesktop/PowerManagement \
+      org.freedesktop.PowerManagement.Shutdown && return
+
+    # ConsoleKit is the last resort since it doesn't allow inhibiting
+    dbus-send --system --type=method_call --print-reply --reply-timeout=2000 \
+      --dest=org.freedesktop.ConsoleKit /org/freedesktop/ConsoleKit/Manager \
+      org.freedesktop.ConsoleKit.Manager.Stop 2>&1 && return
+
+    die "I don't know how to shutdown in this environment"
+}
+
+# main
+# Hide all dbus output unless DEBUG is set.
+test -z "$DEBUG" && exec >/dev/null
+
+case "$1" in
+    -l|--logout)
+        action=logout
+        ;;
+    -r|--reboot)
+        action=reboot
+        ;;
+    -s|--shutdown)
+        action=shutdown
+        ;;
+    *)
+        die "Usage: endsession --logout|--reboot|--shutdown"
+        ;;
+esac
+
+do_$action

@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component type="desktop-application">
+<id>epoptes-client</id>
+<metadata_license>CC0-1.0</metadata_license>
+<name>Epoptes client service</name>
+<name xml:lang="el">Υπηρεσία πελάτη του Epoptes</name>
+<summary>Epoptes computer lab administation tool client service</summary>
+<summary xml:lang="el">Υπηρεσία πελάτη του λογισμικού διαχείρισης εργαστηρίων Epoptes</summary>
+<description>
+<p>Epoptes computer lab administation tool client service</p>
+<p xml:lang="el">Υπηρεσία πελάτη του λογισμικού διαχείρισης εργαστηρίων Epoptes</p>
+</description>
+<categories>
+<category>Settings</category>
+<category>System</category>
+</categories>
+<icon type="stock">epoptes</icon>
+<provides><binary>/usr/sbin/epoptes-client</binary></provides>
+<keywords>
+<keyword>Epoptes</keyword>
+<keyword>client</keyword>
+<keyword>service</keyword>
+<keyword>Υπηρεσία</keyword>
+<keyword>πελάτη</keyword>
+<keyword>του</keyword>
+
+</keywords>
+<screenshots>
+<screenshot type="default">
+<caption>Main window.</caption>
+<image height="450" type="source" width="800">https://screenshots.debian.net/screenshots/000/008/462/large.png</image>
+</screenshot>
+</screenshots>
+<developer_name>Lliurex Team</developer_name>
+</component>
