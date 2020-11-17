@@ -1,0 +1,17 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+include /usr/share/dpkg/pkg-info.mk
+
+# Uncomment this to turn on verbose mode.
+# export DH_VERBOSE=1
+export PYBUILD_INTERPRETERS=python3
+
+%:
+	dh $@ --with llxsrc,python3 --buildsystem=pybuild
+
+override_dh_install:
+	dh_install
+
+override_dh_python3:
+	dh_python3 --no-guessing-deps
