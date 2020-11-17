@@ -1,81 +1,25 @@
-#!/bin/bash
+#!/bin/sh
+# This file is part of Epoptes, https://epoptes.org
+# Copyright 2010-2018 the Epoptes team, see AUTHORS.
+# SPDX-License-Identifier: GPL-3.0-or-later
 
-###########################################################################
-# Connects to a remote server and offers it a local shell.
-# Usage: epoptes [server] [port]
-#
-# Copyright (C) 2010-2012 Alkis Georgopoulos <alkisg@gmail.com>
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# On Debian GNU/Linux systems, the complete text of the GNU General
-# Public License can be found in `/usr/share/common-licenses/GPL'.
-###########################################################################
-
-# epoptes-client may be called either as root, to control the client, or as a
-# user, to control the user session.
-# As root, epoptes-client starts from if-up.d on standalone clients.
-# Unfortunately, thin and fat clients don't get if-up.d events, so just for
-# this case we're using a helper sysvinit script.
-# As a user, epoptes-client runs from /etc/xdg/autostart.
+# epoptes-client is called either from systemd as root, to control the client,
+# or from /etc/xdg/autostart as a user, to control the user session.
 # Users can cancel that from their System > Preferences > Services gnome menu.
-log_file="/tmp/.epoptes_log"
-VERSION=$(lliurex-version)
-download_certificate=False
 
-if [ ! -f $log_file ]; then
-	touch $log_file
-	chmod 777 $log_file 2>/dev/null
-else
-	chmod 777 $log_file 2>/dev/null 
-fi
+usage() {
+    printf "Usage: $0 [-c|-h|-v] [SERVER] [PORT]\n%s" \
+'
+Connect to a remote server and offer it a local shell.
+'
+}
 
-
-discover() {
-	echo "  - Dentro de funcion discover -  " >> $log_file
-	echo >> $log_file
-	MATCH=""
-	if [[ "$VERSION" == *server* ]]
-	then
-		LIGHT=` echo "$DISPLAY" | cut -d ":" -f1`
-		if [[ -z "$LIGHT" ]]; then 
-			MATCH="servidor"
-		else
-			MATCH="ligero"
-		fi
-	else
-		if grep "client" $log_file > /dev/null
-		then
-			if [[ -z "$LTSP_FATCLIENT" ]]; then
-				MATCH="Pesado"
-				download_certificate=True
-			else
-				MATCH="Semiligero"
-				download_certificate=True
-			fi
-		fi
-	fi
-	echo >> $log_file
-	echo "** Soy un $MATCH **" >> $log_file
-	echo >> $log_file
-} 
-
-
+version() {
+    export VERSION="1.0"  # Automatically updated while packaging
+}
 
 die() {
     echo "epoptes-client ERROR: $@" >&2
-    echo "epoptes-client ERROR: $@" >> $log_file
     exit 1
 }
 
@@ -155,73 +99,66 @@ basic_info() {
 
 fetch_certificate()
 {
-    echo "[fetch_certificate] Comprobando el certificado: epoptes-client -c">> $log_file
-    echo "[fetch_certificate]Debe ser 0 sino muere, UID : $UID" >> $log_file
-    test "$UID" -eq 0 || die "[fetch_certificate] Need to be root to fetch the certificate" >> $log_file
+    test "$UID" -eq 0 || die "Need to be root to fetch the certificate"
     mkdir -p /etc/epoptes
     openssl s_client -connect $SERVER:$PORT < /dev/null \
         | sed '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/!d' \
-        > /tmp/.epoptes_server.crt
-    if [ -s /tmp/.epoptes_server.crt ]; then
-	mv /tmp/.epoptes_server.crt /etc/epoptes/server.crt
-        echo "[fetch_certificate] Successfully fetched certificate from $SERVER:$PORT" >> $log_file
-	echo "[fetch_certificate] Successfully fetched certificate from $SERVER:$PORT"
+        > /etc/epoptes/server.crt
+    if [ -s /etc/epoptes/server.crt ]; then
+        echo "Successfully fetched certificate from $SERVER:$PORT"
         exit 0
     else
-	rm -rf /tmp/.epoptes_server.crt || true
-	echo  "[fetch_certificate] FIRST Failed to fetch certificate from $SERVER:$PORT" >> $log_file
-	sleep 10
-	openssl s_client -connect $SERVER:$PORT < /dev/null \
-        | sed '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/!d' \
-        > /tmp/.epoptes_server.crt
-	 if [ -s /tmp/.epoptes_server.crt ]; then
-		mv /tmp/.epoptes_server.crt /etc/epoptes/server.crt
-		echo "[fetch_certificate] Successfully fetched certificate from $SERVER:$PORT" >> $log_file
-		echo "[fetch_certificate] Successfully fetched certificate from $SERVER:$PORT"
-		exit 0
-	else
-		rm -rf /tmp/.epoptes_server.crt || true
-		die "[fetch_certificate] SECOND Failed to fetch certificate from $SERVER:$PORT"
-	fi
-	
+        die "Failed to fetch certificate from $SERVER:$PORT"
     fi
 }
 
-fetch_certificate_download()
-{
-    echo "[fetch_certificate_download] FORZANDO EL DOWNLOAD DEL CERTIFICADO">> $log_file
-    echo "[fetch_certificate_download] Comprobando el certificado">> $log_file
-    echo "[fetch_certificate_download] Debe ser 0 sino muere, UID : $UID" >> $log_file
-    test "$UID" -eq 0 || die "[fetch_certificate_download] Need to be root to fetch the certificate" >> $log_file
-    mkdir -p /etc/epoptes
-    openssl s_client -connect $SERVER:$PORT < /dev/null \
-        | sed '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/!d' \
-        > /tmp/.epoptes_server.crt
-    if [ -s /tmp/.epoptes_server.crt ]; then
-	mv /tmp/.epoptes_server.crt /etc/epoptes/server.crt
-        echo "[fetch_certificate_download] Successfully fetched certificate from $SERVER:$PORT" >> $log_file
-	echo "[fetch_certificate_download] Successfully fetched certificate from $SERVER:$PORT"
-    else
-	rm -rf /tmp/.epoptes_server.crt || true
-	echo  "[fetch_certificate_download] FIRST Failed to fetch certificate from $SERVER:$PORT" >> $log_file
-	sleep 10
-	openssl s_client -connect $SERVER:$PORT < /dev/null \
-        | sed '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/!d' \
-        > /tmp/.epoptes_server.crt
-	 if [ -s /tmp/.epoptes_server.crt ]; then
-		mv /tmp/.epoptes_server.crt /etc/epoptes/server.crt
-		echo "[fetch_certificate_download] Successfully fetched certificate from $SERVER:$PORT" >> $log_file
-		echo "[fetch_certificate_download] Successfully fetched certificate from $SERVER:$PORT"
-	else
-		rm -rf /tmp/.epoptes_server.crt || true
-		die "[fetch_certificate_download] SECOND Failed to fetch certificate from $SERVER:$PORT"
-	fi
-	
+wait_for_dns() {
+    # Don't wait for DNS if SERVER is an IP
+    if [ -z "$(echo "$SERVER" | tr -d '[0-9.]')" ]; then
+        server_ip=$SERVER
+        return
+    fi
+    delay=60
+    while true; do
+        server_ip=$(getent hosts "$SERVER" | awk '{ print $1; exit }')
+        test -n "$server_ip" && break
+        # If DNS is not up yet, retry, otherwise abort
+        server_ip=$(getent hosts "ntp.org" | awk '{ print $1; exit }')
+        if [ -z "$server_ip" ]; then
+            echo "Cannot resolve $SERVER, postponing for $delay seconds..."
+            sleep $delay
+            # Add a minute for each failure to minimize log spamming
+            delay=$(($delay+60))
+        else
+            echo "Cannot resolve $SERVER while DNS appears to work, aborting."
+            exit 1
+        fi
+    done
+}
+
+apply_wol() {
+    if [ "$UID" -eq 0 ] && [ -n "$WOL" ] && [ -x /sbin/ethtool ] &&
+        [ "$EPOPTES_CLIENT_APPLIED_WOL" != True ]
+    then
+        export EPOPTES_CLIENT_APPLIED_WOL=True
+        # Copied from client-functions, these map from server_ip to def_iface
+        read def_iface IP <<EOF
+$(ip route get "$server_ip" | sed -n 's/.*dev *\([^ ]*\).*src *\([^ ]*\).*/\1 \2/p')
+EOF
+        test "${def_iface:-lo}" != "lo" || read def_iface IP <<EOF
+$(ip route get 192.168.67.0 | sed -n 's/.*dev *\([^ ]*\).*src *\([^ ]*\).*/\1 \2/p')
+EOF
+        if [ "${def_iface:-lo}" != "lo" ]; then
+            # Only set WOL if def_iface is both != '' and != 'lo'.
+            echo "Setting WOL=$WOL for $def_iface"
+            ethtool -s "$def_iface" wol $WOL
+        fi
     fi
 }
 
 
-# Main.############################################
+# Main.
+version
 
 # Check the first parameter as it may turn out we don't need to run at all
 case "$1" in
@@ -233,55 +170,18 @@ case "$1" in
         if [ -x /usr/bin/man ]; then
             exec man epoptes-client
         else
-            echo "Usage: $0 [-c|-h|-v] [SERVER] [PORT]"
-            exit 0
+            usage
+            exit
         fi
         ;;
     -c|--certificate)
-        need_certificate=True
+        need_certificate=true
         shift
         ;;
 esac
 
-echo "">> $log_file
-echo "*******DEPURANDO SCRIPT /USR/SBIN/EPOPTES PARA EL *************    USUARIO : $USER      ******">> $log_file
-echo "">> $log_file
-date >> $log_file
-echo "">> $log_file
-echo "$VERSION" >> $log_file
-echo "">> $log_file
-echo "_________MAIN_____________">> $log_file
-discover
-echo "Presesion Lightdm.........."  >> $log_file
-echo "">> $log_file
-name_aux=$(date | awk '{print $4}')
-file_socat="/tmp/.epoptes_socat_$name_aux"
-file_socat_post="/tmp/.epoptes_socat_post_$name_aux"
-ps aux | grep /usr/sbin/epoptes | grep -v root | grep -v "grep" >> $log_file
-ps aux | grep /usr/sbin/epoptes | grep -v root | grep -v "grep"  | awk '{print $2}' | uniq > $file_socat
-cat $file_socat >> $log_file
-USERS_SOCAT=$(wc -l < $file_socat)
-#USERS_SOCAT=$(ps aux | grep /usr/sbin/epoptes | grep -v "root" | grep -v "grep" | awk '{print $2}' | uniq | wc -l)
-echo "USERS_SOCAT = $USERS_SOCAT">> $log_file;
-if [[ "$MATCH" != ligero  ]]; then
-	if (("$USERS_SOCAT" > 2 )); then
-		echo "Estoy dentro del if matando procesos.......">> $log_file
-		for i in $(ps aux | grep /usr/sbin/epoptes | grep -v "root" | grep -v "grep" | awk '{print $2}' | uniq); do
-			echo "Dentro del FOR para .......">> $log_file
-			ps -aux | grep $i >> $log_file
-			echo "Matando el proceso $i"  >> $log_file
-			kill -9 $i >> $log_file
-		done
-	fi
-fi
-
-
-export VERSION="0.5.7" # Automatically updated by mkdst
-
-
-
-# When called from /etc/xdg/autostart, /sbin is not in the system path.
-PATH="$PATH:/sbin:/usr/sbin"
+# Set a reasonable PATH to execute commands or to relaunch epoptes-client.
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
 
 # When launched as a service, LANG might not be set.
 if [ -z "$LANG" ] && [ -r /etc/default/locale ]; then
@@ -290,7 +190,6 @@ if [ -z "$LANG" ] && [ -r /etc/default/locale ]; then
 fi
 
 basic_info
-echo "Capturo basic info UID:$UID TYPE:$TYPE SERVER:$SERVER PORT:$PORT">> $log_file
 # The configuration file overrides the default values
 if [ -f /etc/default/epoptes-client ]; then
     . /etc/default/epoptes-client
@@ -302,30 +201,11 @@ export PORT=${2:-$PORT}
 # Provide an easy way to fetch the server certificate
 test -n "$need_certificate" && fetch_certificate
 
-#Nos aseguramos de tener el certificado del server
-echo "Necesito el certificado -> $download_certificate" >> $log_file
-BAJAR_CERT=True
-if [ $download_certificate  =  $BAJAR_CERT ];then
-        echo "Compruebo si el certificado existe..... ">> $log_file
-        if [ ! -s /etc/epoptes/server.crt ]; then
-               echo "FORZADO -> No tengo el certificado debo adquirirlo del server" >> $log_file
-               fetch_certificate_download
-	else
-		echo "Tengo el certificado continua la ejecucion....." >> $log_file
-        fi
-fi
-
 # We don't want the epoptes-client system service running on the epoptes server
 if ( [ $UID -eq 0 ] && [ $TYPE = "standalone" ] && [ -x /usr/bin/epoptes ] ) ||
     chrooted
 then
-   echo "--Parte del chrooted--" >> $log_file
-   if lliurex-version -t client; then
-	echo "Compruebo como TRUE --> lliurex-version -t client" >> $log_file
-   else
-	echo "FIN compruebo como FALSE --> lliurex-version -t client" >> $log_file
-	exit 0
-   fi
+    exit 0
 fi
 
 # Go to the scripts directory, so that we can run them with ./xxx
@@ -336,29 +216,19 @@ else
     cd /usr/share/epoptes-client
 fi
 
-# Source the lsb init functions, for log_begin_msg.
-# Unfortunately it seems that Centos and Fedora don't have that file.
-if [ -f /lib/lsb/init-functions ]; then
-    . /lib/lsb/init-functions
-else
-    alias log_begin_msg="echo -n"
-fi
-log_begin_msg "Epoptes-client connecting to $SERVER:$PORT..."
-echo "Epoptes-client connecting to $SERVER:$PORT..."
-echo "Epoptes-client connecting to $SERVER:$PORT...">>$log_file
+wait_for_dns
+apply_wol
+printf "Epoptes-client connecting to $SERVER:$PORT..."
+
 # Call chain:
-#  * if-up.d executes /usr/sbin/epoptes-client
+#  * systemd executes /usr/sbin/epoptes-client
 #  * then socat is called
 #  * after a successful connection, socat exec's /bin/sh
 #  * and the daemon sends /usr/share/epoptes/client-functions to that shell
 
 # Kill all ghost instances of epoptes-client of the same user.
-# That may happen if network connectivity is lost for a while.
-# Standalone workstations don't hang if the network is down, and nbd might cope
-# with that for LTSP clients, but epoptes kills disconnected epoptes-clients.
 # The current epoptes-client is excluded because it starts with /bin/sh.
-echo "pkill de $UID">>$log_file
-pkill -U $UID -f '^epoptes-client$'
+pkill -QUIT -U "$UID" -f '^epoptes-client$'
 
 # Remember the stdout descriptor to use it in the second phase.
 # stdio will be redirected to the server, but stderr will be kept in the
@@ -374,93 +244,24 @@ cmdline='bash -c \"exec -a epoptes-client sh\"'
 # Offer an lts.conf (or environment) variable to disable cert verification.
 if my_boolean_is_true "${EPOPTES_CLIENT_VERIFY_CERTIFICATE:-True}"; then
     cert_param="cafile=/etc/epoptes/server.crt"
+    # Check if socat provides the commonname option and use it in order to
+    # support certificates which don't have a commonname set
+    if socat -hhh | grep -q openssl-commonname; then
+        cert_param="$cert_param,commonname=\"\""
+    fi
 else
     cert_param="verify=0"
 fi
 
 # Connect to the server, or keep retrying until the server gets online
 # (for standalone workstations booted before the server).
-RUN=1
-salida(){
-	RUN=0
-	echo "Estoy en la funcion de SALIDA de $USER" >> $log_file
-	date >> $log_file
-	echo "Quiero matar el proceso $BASHPID" >> $log_file
-	#kill -9 $BASHPID
-}
-echo "RUN = $RUN"
-test_conn(){
-    echo "Testeando la funcion CONN $USER">> $log_file
-    if [ -z ${LTSP_CLIENT} ]; then
-	echo "No es cliente LTSP">> $log_file
-	#exit 0
-	#RUN=0
-	return 0
-    fi
-    ping -c 2 ${LTSP_CLIENT}
-    if [ $? -eq 0 ]; then
-	echo "Estamos en if del ping -c">> $log_file
-	#exit 0
-	return 0
-    fi
-    echo "Vamos a salida -- No detecte nada en funcion CONN">> $log_file
-    salida
-}
-
-trap salida KILL TERM QUIT INT STOP EXIT
-echo "__________________________________________________">>$log_file
-echo "">>$log_file
-echo "-- Funcion Principal para abrir el SOCAT --" >> $log_file
 if [ -s /etc/epoptes/server.crt ] || [ "$cert_param" = "verify=0" ]; then
-   echo "Dentro del if antes del while 1 del usuario $USER" >> $log_file
-   while [ ${RUN} -eq 1 ] && sleep 1; do
-	ALIVE=$(ps ax|grep $PPID|grep -v grep|wc -l)
-	echo "Dentro del While porque el RUN es $RUN para usuario $USER">> $log_file
-	ps aux | grep /usr/sbin/epoptes | grep -v root | grep -v "grep"  | awk '{print $2}' | uniq > $file_socat_post
-	echo "   - USERS_SOCAT_POST - ">>$log_file
-	cat $file_socat_post >> $log_file
-	USERS_SOCAT_POST=$(wc -l < $file_socat_post)
-	#USERS_SOCAT_POST=`ps aux | grep /usr/sbin/epoptes | grep -v root | grep -v "grep" | awk '{print $2}' | uniq | wc -l `
-	echo "Calculando el USERS_SOCAT_POST: $USERS_SOCAT_POST" >> $log_file
-	if (( $USERS_SOCAT_POST < 3 )) || [[ "$MATCH" == "ligero" ]]; then
-		echo "-----SOCAT se va a ejecutar para el usuario: $USER -----">> $log_file
-		sleep 20
-		date_create=$(date)
-		echo "socat openssl-connect:$SERVER:$PORT,$cert_param,interval=60,forever EXEC:'$cmdline',sigint,sigquit,sigterm" >> $log_file
-		socat openssl-connect:$SERVER:$PORT,$cert_param,interval=60,forever EXEC:"$cmdline",sigint,sigquit
-		echo "-------------------------------------" $log_file
-		echo "Muere el SOCAT del usuario: $USER creado: $date_create">> $log_file
-		date >> $log_file
-		echo "-------------------------------------" $log_file
-	fi
-	
-	if [ "x${ALIVE}" != "x1" ]; then 
-	    	echo "Se aborta el script para el usuario $USER debido al AlIVE">> $log_file
-		exit 1
-	fi
-	echo "Paso del ALIVE y continuo porque RUN: $RUN del usuario $USER">> $log_file
-	test_conn
-	SESSION_GNOME=`ps aux | grep mate-session | wc -l `
-	if (( $SESSION_GNOME < 2 )); then
-		date >> $log_file
-		echo "La sesion no esta activa me quedo en la sesion MATE-SESSION: $SESSION_GNOME modifico el RUN" >> $log_file
-		RUN=0
-	fi
-    done;
+    exec socat -T 60 openssl-connect:$SERVER:$PORT,$cert_param,interval=60,forever EXEC:"$cmdline"
 elif [ -f /etc/epoptes/server.crt ]; then
-	echo "Antes del while2 del user: $USER" >> $log_file
-    while [ ${RUN} -eq 1 ] && sleep 1; do
-	ALIVE=$(ps ax|grep $PPID|grep -v grep|wc -l)
-	socat tcp:$SERVER:$PORT,interval=60,forever EXEC:"$cmdline",nofork
-	if [ "x${ALIVE}" != "x1" ]; then 
-	    exit 1
-	fi
-	echo "RUN en ELIF es $RUN del usuario $USER">> $log_file
-	test_conn
-    done;
+   exec socat tcp:$SERVER:$PORT,interval=60,forever EXEC:"$cmdline",nofork
 else
-	echo "en el else del usuario $USER">> $log_file
-    $0 -c
-    exec $0
+    die "
+The epoptes certificate file, /etc/epoptes/server.crt, doesn't exist.
+You can fetch the server certificate by running:
+$0 -c"
 fi
-echo "____________FIN_______SCRIPT____________">> $log_file
