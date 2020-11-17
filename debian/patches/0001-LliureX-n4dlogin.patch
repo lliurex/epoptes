@@ -94,8 +94,8 @@ index 75d5ef3..bb1a0c7 100755
 +			return False
 +		if getpass.getuser() not in epoptes_members:
 +			return False
-+    else:
-+    	return False
++	else:
++		return False
      # At this point it makes sense to try relaunching.
      # The backgrounding is to allow sg and sh to terminate.
 -    LOG.w('Relaunching epoptes using sg to gain group access')
