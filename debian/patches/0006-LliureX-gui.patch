@@ -1,0 +1,561 @@
+From: Juan Pelegrina <juapesai@hotmail.com>
+Date: Tue, 17 Nov 2020 11:30:54 +0100
+Subject: LliureX-gui
+
+---
+ epoptes/ui/gtk/epoptes.ui |  63 +++++++++--
+ epoptes/ui/gui.py         | 258 +++++++++++++++++++++++++++++++++++++++-------
+ 2 files changed, 279 insertions(+), 42 deletions(-)
+
+diff --git a/epoptes/ui/gtk/epoptes.ui b/epoptes/ui/gtk/epoptes.ui
+index 1d01192..dfbd3a5 100644
+--- a/epoptes/ui/gtk/epoptes.ui
++++ b/epoptes/ui/gtk/epoptes.ui
+@@ -107,7 +107,7 @@
+   <object class="GtkImage" id="img_restrictions_block_internet">
+     <property name="visible">True</property>
+     <property name="can_focus">False</property>
+-    <property name="icon_name">network-offline</property>
++    <property name="pixbuf">images/16/block-internet.png</property>
+   </object>
+   <object class="GtkImage" id="img_restrictions_lock_screen">
+     <property name="visible">True</property>
+@@ -122,7 +122,7 @@
+   <object class="GtkImage" id="img_restrictions_unblock_internet">
+     <property name="visible">True</property>
+     <property name="can_focus">False</property>
+-    <property name="icon_name">connect_established</property>
++    <property name="pixbuf">images/16/unblock-internet.png</property>
+   </object>
+   <object class="GtkImage" id="img_restrictions_unlock_screen">
+     <property name="visible">True</property>
+@@ -184,11 +184,21 @@
+     <property name="can_focus">False</property>
+     <property name="pixbuf">images/message.svg</property>
+   </object>
++  <object class="GtkImage" id="img_tlb_restrictions_internet">
++    <property name="visible">True</property>
++    <property name="can_focus">False</property>
++    <property name="pixbuf">images/16/block-internet.png</property>
++  </object>
+   <object class="GtkImage" id="img_tlb_restrictions_lock_screen">
+     <property name="visible">True</property>
+     <property name="can_focus">False</property>
+     <property name="pixbuf">images/lock-screen.svg</property>
+   </object>
++  <object class="GtkImage" id="img_tlb_restrictions_unlock_internet">
++    <property name="visible">True</property>
++    <property name="can_focus">False</property>
++    <property name="pixbuf">images/16/unblock-internet.png</property>
++  </object>
+   <object class="GtkImage" id="img_tlb_restrictions_unlock_screen">
+     <property name="visible">True</property>
+     <property name="can_focus">False</property>
+@@ -615,21 +625,21 @@
+                             <child>
+                               <object class="GtkImageMenuItem" id="imi_restrictions_block_internet">
+                                 <property name="label" translatable="yes">Block Internet</property>
+-                                <property name="sensitive">False</property>
++                                <property name="visible">True</property>
+                                 <property name="can_focus">False</property>
+-                                <property name="use_underline">True</property>
+                                 <property name="image">img_restrictions_block_internet</property>
+                                 <property name="use_stock">False</property>
++                                <signal name="activate" handler="blockInternet" swapped="no"/>
+                               </object>
+                             </child>
+                             <child>
+                               <object class="GtkImageMenuItem" id="imi_restrictions_unblock_internet">
+                                 <property name="label" translatable="yes">Unblock Internet</property>
+-                                <property name="sensitive">False</property>
++                                <property name="visible">True</property>
+                                 <property name="can_focus">False</property>
+-                                <property name="use_underline">True</property>
+                                 <property name="image">img_restrictions_unblock_internet</property>
+                                 <property name="use_stock">False</property>
++                                <signal name="activate" handler="unblockInternet" swapped="no"/>
+                               </object>
+                             </child>
+                             <child>
+@@ -703,7 +713,6 @@
+                     </child>
+                     <child>
+                       <object class="GtkMenuItem" id="imi_clients_network_benchmark">
+-                        <property name="visible">True</property>
+                         <property name="can_focus">False</property>
+                         <property name="label" translatable="yes">Network Benchmark</property>
+                         <property name="use_underline">True</property>
+@@ -1063,6 +1072,46 @@
+                 <property name="homogeneous">False</property>
+               </packing>
+             </child>
++            <child>
++              <object class="GtkToolButton" id="tlb_restrictions_block_internet">
++                <property name="visible">True</property>
++                <property name="can_focus">False</property>
++                <property name="tooltip_text" translatable="yes">Block Internet</property>
++                <property name="label" translatable="yes">Lock Internet</property>
++                <property name="use_underline">True</property>
++                <property name="icon_widget">img_tlb_restrictions_internet</property>
++                <signal name="clicked" handler="blockInternet" swapped="no"/>
++              </object>
++              <packing>
++                <property name="expand">False</property>
++                <property name="homogeneous">True</property>
++              </packing>
++            </child>
++            <child>
++              <object class="GtkToolButton" id="tlb_restrictions_unblock_internet">
++                <property name="visible">True</property>
++                <property name="can_focus">False</property>
++                <property name="tooltip_text" translatable="yes">Unblock Internet</property>
++                <property name="label" translatable="yes">Unblock Internet</property>
++                <property name="use_underline">True</property>
++                <property name="icon_widget">img_tlb_restrictions_unlock_internet</property>
++                <signal name="clicked" handler="unblockInternet" swapped="no"/>
++              </object>
++              <packing>
++                <property name="expand">False</property>
++                <property name="homogeneous">True</property>
++              </packing>
++            </child>
++            <child>
++              <object class="GtkSeparatorToolItem">
++                <property name="visible">True</property>
++                <property name="can_focus">False</property>
++              </object>
++              <packing>
++                <property name="expand">False</property>
++                <property name="homogeneous">True</property>
++              </packing>
++            </child>
+             <child>
+               <object class="GtkToolButton" id="tlb_clients_information">
+                 <property name="visible">True</property>
+diff --git a/epoptes/ui/gui.py b/epoptes/ui/gui.py
+index 75d5152..bf16137 100644
+--- a/epoptes/ui/gui.py
++++ b/epoptes/ui/gui.py
+@@ -20,7 +20,7 @@ from epoptes.common.constants import *
+ from epoptes.common import config
+ from epoptes.core import logger, structs, wol
+ from epoptes.ui.about import About
+-from epoptes.ui.benchmark import Benchmark
++#from epoptes.ui.benchmark import Benchmark
+ from epoptes.ui.client_information import ClientInformation
+ from epoptes.ui.common import gettext as _
+ from epoptes.ui.exec_command import ExecCommand
+@@ -44,7 +44,9 @@ class EpoptesGui(object):
+              r"""ip -oneline -family inet link show | """
+              r"""sed -n 's/.*ether[[:space:]]*\([[:xdigit:]:]*\).*/\1/p';"""
+              r"""echo $LTSP_CLIENT_MAC"""],
+-            stdout=subprocess.PIPE).communicate()[0].decode().split()
++            # START LLIUREX
++            stdout=subprocess.PIPE).communicate()[0].decode().lower().split()
++        	# END LLIUREX
+         self.current_thumbshots = dict()
+         self.daemon = None
+         self.displayed_compatibility_warning = False
+@@ -68,6 +70,11 @@ class EpoptesGui(object):
+             'GUI', 'thumbshots_width', fallback=128)
+         self.ts_height = int(self.ts_width/(4/3))
+         self.uid = os.getuid()
++        # START LLIUREX
++        if not os.path.isdir(os.path.expanduser('~/.config/epoptes/')):
++            os.system("mkdir -p "+os.path.expanduser('~/.config/epoptes/'))
++        # END LLIUREX
++
+         self.vncserver = None
+         self.vncserver_port = None
+         self.vncserver_pwd = None
+@@ -113,8 +120,12 @@ class EpoptesGui(object):
+             self.default_group_ref.get_path())
+         self.get('adj_icon_size').set_value(self.ts_width)
+         self.on_scl_icon_size_value_changed(None)
++        # START LLIUREX
+         # Support a global groups.json, writable only by the "administrator"
+-        self.groups_file = '/etc/epoptes/groups.json'
++        #self.groups_file = '/etc/epoptes/groups.json'
++        self.groups_file =os.path.expanduser('~/.config/epoptes/groups.json')
++        # END LLIUREX
++
+         if os.access(self.groups_file, os.R_OK):
+             # Don't use global groups for the "administrator"
+             self.global_groups = not os.access(self.groups_file, os.W_OK)
+@@ -122,7 +133,10 @@ class EpoptesGui(object):
+             self.groups_file = config.expand_filename('groups.json')
+             self.global_groups = False
+         try:
+-            _saved_clients, groups = config.read_groups(self.groups_file)
++        	# START LLIUREX
++            #_saved_clients, groups = config.read_groups(self.groups_file)
++            _saved_clients, groups = config.read_groups(self.groups_file,True)
++            # END LLIUREX
+         except ValueError as exc:
+             self.warning_dialog(
+                 _('Failed to read the groups file:') + '\n'
+@@ -162,25 +176,36 @@ class EpoptesGui(object):
+         self.get('cmi_show_real_names').set_active(self.show_real_names)
+         self.mainwin.set_sensitive(False)
+ 
++    
++   
+     def save_settings(self):
+         """Helper function for on_imi_file_quit_activate."""
+-        sel_group = self.gstore.get_path(self.get_selected_group()[0])[0]
+-        self.gstore.remove(self.gstore.get_iter(
+-            self.default_group_ref.get_path()))
+-        if not self.global_groups:
+-            config.save_groups(self.groups_file, self.gstore)
+-        settings = config.settings
+-        if not settings.has_section('GUI'):
+-            settings.add_section('GUI')
+-
+-        settings.set('GUI', 'selected_group', str(sel_group))
+-        settings.set('GUI', 'show_real_names', str(self.show_real_names))
+-        settings.set('GUI', 'thumbshots_width', str(self.ts_width))
+-        config.write_ini_file(config.expand_filename('settings'), settings)
+-
++        # START LLIUREX
++        try:
++            sel_group = self.gstore.get_path(self.get_selected_group()[0])[0]
++            self.gstore.remove(self.gstore.get_iter(self.default_group_ref.get_path()))
++            if not self.global_groups:
++                #config.save_groups(self.groups_file, self.gstore)
++                config.save_groups(os.path.expanduser('~/.config/epoptes/groups.json'), self.gstore,(self.n4d_user,self.n4d_password))
++
++            settings = config.settings
++            if not settings.has_section('GUI'):
++                settings.add_section('GUI')
++            
++            settings.set('GUI', 'selected_group', str(sel_group))
++            settings.set('GUI', 'show_real_names', str(self.show_real_names))
++            settings.set('GUI', 'thumbshots_width', str(self.ts_width))
++            config.write_ini_file(config.expand_filename('settings'), settings)
++
++        except Exception as e:
++        	print(str(e))
++        	pass
++        #END LIUREX
++    
+     def on_imi_file_quit_activate(self, _widget):
+         """Handle imi_file_quit.activate and wnd_main.destroy events."""
+         self.save_settings()
++       
+         if self.vncserver is not None:
+             self.vncserver.kill()
+         if self.vncviewer is not None:
+@@ -283,8 +308,17 @@ class EpoptesGui(object):
+                 self.vncviewer = subprocess.Popen(
+                     ['vncviewer', '-listen', str(self.vncviewer_port-5500)])
+ 
++        # START LLIUREX
+         # And, tell the clients to connect to the server
+-        self.exec_on_selected_clients([cmd, self.vncviewer_port] + list(args))
++        #self.exec_on_selected_clients([cmd, self.vncviewer_port] + list(args))
++        # Adding some workarount to solve the "teacher-non-in-server problem"
++        # getting the ip from current machine and use it in xvnc
++        # 
++        class_ip = self.getClassroomIp()
++        if class_ip == None:
++            class_ip = "server"
++        self.exec_on_selected_clients([cmd, str(class_ip)+":"+str(self.vncviewer_port)] + list(args))
++        #END LLIUREX
+ 
+     def on_imi_broadcasts_monitor_user_activate(self, _widget):
+         """Handle imi_sbroadcasts_monitor_user.activate event."""
+@@ -300,6 +334,9 @@ class EpoptesGui(object):
+ 
+     def broadcast_screen(self, fullscreen=''):
+         """Helper function for on_imi_broadcasts_broadcast_screen*_activate."""
++        #START LLIUREX
++        class_ip="server"
++        #END LLIUREX
+         if self.vncserver is None:
+             pwdfile = config.expand_filename('vncpasswd')
+             pwd = ''.join(random.sample(
+@@ -309,6 +346,12 @@ class EpoptesGui(object):
+                 pwd = file.read()
+             self.vncserver_port = self.find_unused_port()
+             self.vncserver_pwd = ''.join('\\%o' % c for c in pwd)
++            # START LLIUREX
++            class_ip = self.getClassroomIp()
++            if class_ip == None:
++                class_ip = "server"
++
++            # END LLIUREX
+             self.vncserver = subprocess.Popen(
+                 ['x11vnc', '-noshm', '-nopw', '-quiet', '-viewonly', '-shared',
+                  '-forever', '-nolookup', '-24to32', '-threads', '-rfbport',
+@@ -317,10 +360,16 @@ class EpoptesGui(object):
+         # screensaver, so send the reset command to both epoptes processes
+         self.exec_on_selected_clients(
+             ['reset_screensaver'], mode=EM_SYSTEM_AND_SESSION)
++
++        # START LLIUREX
++        #self.exec_on_selected_clients(
++        #    ["receive_broadcast", self.vncserver_port, self.vncserver_pwd,
++        #     fullscreen], mode=EM_SYSTEM_OR_SESSION)
++
+         self.exec_on_selected_clients(
+-            ["receive_broadcast", self.vncserver_port, self.vncserver_pwd,
++            ["receive_broadcast", str(class_ip)+":"+str(self.vncserver_port), self.vncserver_pwd,
+              fullscreen], mode=EM_SYSTEM_OR_SESSION)
+-
++        # END LLIUREX
+     def on_imi_broadcasts_broadcast_screen_fullscreen_activate(self, _widget):
+         """Handle imi_broadcasts_broadcast_screen_fullscreen.activate event."""
+         self.broadcast_screen('true')
+@@ -371,6 +420,14 @@ class EpoptesGui(object):
+             inst = client[C_INSTANCE]
+             if inst.type == 'offline':
+                 continue
++            # Adding some workarount to solve the "teacher-non-in-server proble
++            # getting the ip from current machine and use it in xvnc
++            
++            # START LLIUREX
++            class_ip = self.getClassroomIp()
++            if class_ip == None:
++                class_ip = "server"
++            # END LLIUREX
+             port = self.find_unused_port()
+             user = '--'
+             if e_m == EM_SESSION and client[C_SESSION_HANDLE]:
+@@ -381,6 +438,9 @@ class EpoptesGui(object):
+             subprocess.Popen(['xterm', '-T', title, '-e', 'socat',
+                               'tcp-listen:%d,keepalive=1' % port,
+                               'stdio,raw,echo=0'])
++            # START LLIUREX
++            port = str(class_ip)+":"+str(port)
++            # END LLIUREX
+             self.exec_on_clients(['remote_term', port], [client], mode=e_m)
+ 
+     def on_imi_open_terminal_user_locally_activate(self, _widget):
+@@ -405,6 +465,68 @@ class EpoptesGui(object):
+         self.exec_on_selected_clients(
+             ['unlock_screen'], mode=EM_SESSION_AND_SYSTEM)
+ 
++    #STAR LLIUREX
++    def blockInternet(self,widget):
++
++        clients = self.get_selected_clients()
++        fat_clients=["standalone","fat"]
++        for client in clients:
++        	if client[C_INSTANCE].type in fat_clients:
++        		ip=list(client[C_INSTANCE].users)[0].split(":")[0]
++        		print("* Blocking standalone client [%s] ..."%ip)
++        		try:
++        			import xmlrpc.client as n4dclient
++        			import ssl
++        			context=ssl._create_unverified_context()
++        			c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
++        			c.block((self.n4d_user,self.n4d_password),"IptablesManager","",ip)
++        		except Exception as e:
++        			print(str(e))
++
++        	if client[C_INSTANCE].type=="thin":
++        		key=list(client[C_INSTANCE].users)[0]
++        		user=client[C_INSTANCE].users[key]["uname"]
++        		print("* Blocking thin client [%s] ..."%user)
++        		try:
++        			import xmlrpc.client as n4dclient
++        			import ssl
++        			context=ssl._create_unverified_context()
++        			c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
++        			c.block((self.n4d_user,self.n4d_password),"IptablesManager",user,"127.0.0.1")
++        		except Exception as e:
++        			print(str(e))
++    
++    def unblockInternet(self,widget):
++
++        clients = self.get_selected_clients()
++        fat_clients=["standalone","fat"]
++        for client in clients:
++            if client[C_INSTANCE].type in fat_clients:
++                ip=list(client[C_INSTANCE].users)[0].split(":")[0]
++                print("* Unblocking standalone client [%s] ..."%ip)
++                try:
++                	import xmlrpc.client as n4dclient
++                	import ssl
++                	context=ssl._create_unverified_context()
++                	c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
++                	c.unblock((self.n4d_user,self.n4d_password),"IptablesManager","",ip)
++                except Exception as e:
++                    print(str(e))
++
++            if client[C_INSTANCE].type=="thin":
++                key=list(client[C_INSTANCE].users)[0]
++                user=client[C_INSTANCE].users[key]["uname"]
++                print("* Unblocking thin client [%s] ..."%user)
++                try:
++                    import xmlrpc.client as n4dclient
++                    import ssl
++                    context=ssl._create_unverified_context()
++                    c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
++                    c.unblock((self.n4d_user,self.n4d_password),"IptablesManager",user,"127.0.0.1")
++                except Exception as e:
++                    print(str(e))
++
++    # END LLIUREX                
+     def on_imi_restrictions_mute_sound_activate(self, _widget):
+         """Handle imi_restrictions_mute_sound.activate event."""
+         self.exec_on_selected_clients(
+@@ -429,16 +551,23 @@ class EpoptesGui(object):
+         if self.confirmation_dialog(
+                 _('Are you sure you want to remove the selected client(s)'
+                   ' from group "%s"?') % group.name):
+-            for client in clients:
+-                group.remove_client(client[C_INSTANCE])
+-            self.fill_icon_view(self.get_selected_group()[1], True)
+-
++            # START LLIUREX
++            try:
++            	for client in clients:
++            		print(group)
++            		group.remove_client(client[C_INSTANCE])
++            	self.fill_icon_view(self.get_selected_group()[1], True)
++            except Exception as e:
++            	print(str(e))
++            	pass
++           # END LLIUREX
++    
+     def on_imi_clients_network_benchmark_activate(self, _widget):
+         """Handle imi_clients_network_benchmark.activate event."""
+         if not self.benchmark:
+             self.benchmark = Benchmark(self.mainwin, self.daemon.command)
+         self.benchmark.run(self.get_selected_clients() or self.cstore)
+-
++    
+     def on_imi_clients_information_activate(self, _widget):
+         """Handle imi_clients_information.activate event."""
+         if not self.client_information:
+@@ -708,6 +837,7 @@ class EpoptesGui(object):
+         daemon.enumerate_clients().addCallback(self.amp_got_clients)
+         self.fill_icon_view(self.get_selected_group()[1])
+ 
++    
+     def disconnected(self, _daemon):
+         """Called from uiconnection->Daemon->connectionLost."""
+         self.mainwin.set_sensitive(False)
+@@ -727,7 +857,7 @@ class EpoptesGui(object):
+         dlg.destroy()
+         # noinspection PyUnresolvedReferences
+         reactor.stop()
+-
++    
+     def amp_client_connected(self, handle):
+         """Called from uiconnection->Daemon->client_connected."""
+         LOG.w("New connection from", handle)
+@@ -783,6 +913,35 @@ class EpoptesGui(object):
+             dfr.addErrback(lambda err, h=handle: LOG.e(
+                 "Error when enumerating client %s: %s" % (h, err)))
+ 
++    #START LLIUREX
++    def searchInGroups(self,yo,cliente):
++
++        if (yo == cliente):
++            return 1
++        import subprocess as sp
++        p1 = sp.Popen(["id",yo],stdout=sp.PIPE)
++        p2 = sp.Popen(["id",cliente],stdout=sp.PIPE)
++        out1,err1 = p1.communicate()
++        out2,err2 = p2.communicate()
++        
++        if type(out1) is bytes:
++            out1=out1.decode()
++        if type(out2) is bytes:
++            out2=out2.decode()    
++        
++        if (out2.find('teachers') == -1):
++            #if he is student must be showed
++            return 1
++        else:
++            #he's a teacher
++            if (out1.find('admins') == -1):
++                #if im not promoted teacher other teachers must be hidden
++                return 0
++            else:
++                #if im a promoted teacher other teachers must be displayed
++                return 1
++    #END LLIUREX
++
+     def add_to_icon_view(self, client):
+         """Properly add a Client class instance to the clients iconview."""
+         # If there are one or more users on client, add a new iconview entry
+@@ -792,10 +951,13 @@ class EpoptesGui(object):
+             label = 'rname'
+         if client.users:
+             for hsession, user in client.users.items():
+-                self.cstore.append(
+-                    [self.calculate_label(client, user[label]),
+-                     self.imagetypes[client.type], client, hsession])
+-                self.ask_thumbshot(hsession, True)
++            	# START LLIUREX
++                if self.searchInGroups(self.n4d_user,user['uname']):
++                    self.cstore.append(
++                        [self.calculate_label(client, user[label]),
++                         self.imagetypes[client.type], client, hsession])
++                    self.ask_thumbshot(hsession, True)
++                # END LLIUREX
+         else:
+             self.cstore.append(
+                 [self.calculate_label(client),
+@@ -862,7 +1024,10 @@ class EpoptesGui(object):
+ 
+         # Check if the incoming client is the same with the computer in which
+         # epoptes is running, so we don't add it to the list.
+-        if (mac in self.current_macs) and ((uid == self.uid) or (uid == 0)):
++        # START LLIUREX
++        #if (mac in self.current_macs) and ((uid == self.uid) or (uid == 0)):
++        if (mac in self.current_macs) and (uid == self.uid):
++       	# END LLIUREX
+             LOG.w("  SAME-PC: Won't add this client to my lists")
+             return False
+ 
+@@ -900,8 +1065,7 @@ class EpoptesGui(object):
+         else:
+             # This is a user epoptes-client
+             client.add_user(user, name, handle)
+-            if not already and (sel_group.has_client(client)
+-                                or self.is_default_group_selected()):
++            if not already and (sel_group.has_client(client) or self.is_default_group_selected()):
+                 self.notify_queue.enqueue(
+                     _("Connected:"),
+                     _("%(user)s on %(host)s") % {"user": user, "host": host})
+@@ -1050,7 +1214,11 @@ class EpoptesGui(object):
+                 if e_m == EM_SESSION_ONLY:
+                     handle = client[C_SESSION_HANDLE]
+                 elif e_m == EM_SYSTEM_ONLY:
+-                    handle = client[C_INSTANCE].hsystem
++                    try:
++                        handle = client[C_INSTANCE].hsystem
++                        print(handle)
++                    except Exception as e:
++                        print(str(e))    
+                 else:  # e_m == EM_EXIT_IF_SENT
+                     if sent:
+                         break
+@@ -1094,3 +1262,23 @@ class EpoptesGui(object):
+             text, title=_('Warning'))
+         dlg.run()
+         dlg.destroy()
++    
++    #START LLIUREX
++    def getClassroomIp(self):
++        '''
++        Adding some workarount to solve the "teacher-non-in-server problem"
++        getting the ip from current machine and use it in xvnc
++        ''' 
++        class_ip = None
++        try:
++            import socket
++            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
++            s.connect(("server",80))
++            class_ip = s.getsockname()[0]
++            s.close()
++            if "127.0.0.1" == class_ip:
++                return None
++        except Exception as e:
++            print(str(e))
++        return class_ip
++    #END LLIUREX    
