@@ -43,7 +43,7 @@ index 08c171d..ce1ae33 100644
 +        	import ssl
 +        	context=ssl._create_unverified_context()
 +        	c=x.ServerProxy("https://server:9779",context=context,allow_none=True)
-+        	data=c.get_variable("","VariablesManager","EPOPTES_GROUPS")
++        	data=c.get_variable("EPOPTES_GROUPS").get('return',None)
 +        	#print "***** EPOPTES N4D DATA: [%s] ..."%data
 +        	# If not exists value to EPOPTES GROUP in N4D, .config/epoptes/groups.json is listed
 +        	if data==None or data=={}:
@@ -83,7 +83,7 @@ index 08c171d..ce1ae33 100644
              file.write(json.dumps(data, indent=2))
 +        
 +        f=open(filename)
-+        data=json.loads(f.read())
++        datas=json.loads(f.read())
 +        f.close()
 +        
 +
@@ -100,9 +100,9 @@ index 08c171d..ce1ae33 100644
 +    	c=x.ServerProxy("https://server:9779",context=context,allow_none=True)
 +    	# Just in case EPOPTES_GROUPS Variable does not exist
 +    	#print c.add_variable(n4d_mode,"VariablesManager","EPOPTES_GROUPS",{},"","Epoptes Groups",[],False,False)
-+    	if c.add_group(n4d_mode,"EpoptesVariables",n4d_mode)[0]:
++    	if c.get_plugin("EpoptesVariables").add_group(n4d_mode,n4d_mode).get('status',None)==0:
 +    		#print c.set_variable(n4d_mode,"VariablesManager","EPOPTES_GROUPS",data)
-+    		c.set_group(n4d_mode,"EpoptesVariables",n4d_mode,data)
++    		c.get_plugin("EpoptesVariables").set_group(n4d_mode,n4d_mode,datas)
 +    
  # The system settings are shared with epoptes-client, that's why the caps.
  system = read_shell_file('/etc/default/epoptes')

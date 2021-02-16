@@ -157,8 +157,8 @@ index 75d5ef3..bb1a0c7 100755
 +			
 +			dialog = Gtk.Dialog("n4d-epoptes",
 +			   None,
-+			   Gtk.DialogFlags.MODAL | 0,
-+			   (Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
++			   modal=True,)
++			dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
 +			    Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
 +			    
 +			def manual_validate(widget):
@@ -170,22 +170,22 @@ index 75d5ef3..bb1a0c7 100755
 +			dialogBox=dialog.get_content_area()
 +			dialogBox.pack_start(img,False,True,5)
 +			
-+			hbox1=Gtk.Table(2,2)
-+			hbox1.set_row_spacings(5)
-+			hbox1.set_col_spacings(5)
++			hbox1=Gtk.Grid()
 +			user_entry=Gtk.Entry()
 +			user_entry.set_text(user)
-+			user_label=Gtk.Label(get_translation("User"))
-+			user_label.set_alignment(0,0)
++			user_label=Gtk.Label(label=get_translation("User"))
++			user_label.set_halign(Gtk.Align.START)
++			user_label.set_valign(Gtk.Align.CENTER)
 +			password_entry=Gtk.Entry()
 +			password_entry.set_visibility(False)
 +			password_entry.connect("activate",manual_validate)
-+			password_label=Gtk.Label(get_translation("Password"))
-+			password_label.set_alignment(0,0)
-+			hbox1.attach(user_label,0,1,0,1)
-+			hbox1.attach(user_entry,1,2,0,1)
-+			hbox1.attach(password_label,0,1,1,2)
-+			hbox1.attach(password_entry,1,2,1,2)
++			password_label=Gtk.Label(label=get_translation("Password"))
++			password_label.set_halign(Gtk.Align.START)
++			password_label.set_valign(Gtk.Align.CENTER)
++			hbox1.attach(user_label,0,0,0,1)
++			hbox1.attach(user_entry,1,0,1,1)
++			hbox1.attach(password_label,0,1,1,1)
++			hbox1.attach(password_entry,1,1,1,2)
 +			dialogBox.pack_start(hbox1,False,True,5)
 +			msg_label=Gtk.Label()
 +			msg_label.set_markup(msg)
@@ -203,8 +203,8 @@ index 75d5ef3..bb1a0c7 100755
 +				c=n4dclient.ServerProxy('https://server:9779',context=context,allow_none=True)
 +				user_info=(user_entry.get_text(),password_entry.get_text())
 +				user=user_entry.get_text()
-+				ret=c.register_ip(user_info,"EpoptesServer","")
-+				if ret==True:
++				ret=c.get_plugin("EpoptesServer").register_ip(user_info,"").get('status',None)
++				if ret==0:
 +					ok=True
 +				else:
 +					msg="<span foreground='red'>Error: " + str(ret) + "</span>"
