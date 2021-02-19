@@ -1,3 +1,9 @@
+epoptes (1:20.01-1~ubuntu20.04.1+lliurex3) focal; urgency=medium
+
+  * Fixed some patches
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Fri, 19 Feb 2021 10:09:01 +0100
+
 epoptes (1:20.01-1~ubuntu20.04.1+lliurex2) focal; urgency=medium
 
   * Updated to use new n4d
