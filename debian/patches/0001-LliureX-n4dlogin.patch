@@ -159,7 +159,7 @@ index 75d5ef3..bb1a0c7 100755
 +			   None,
 +			   modal=True,)
 +			dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
-+			    Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
++			    Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT)
 +			    
 +			def manual_validate(widget):
 +				dialog.hide()
@@ -203,7 +203,7 @@ index 75d5ef3..bb1a0c7 100755
 +				c=n4dclient.ServerProxy('https://server:9779',context=context,allow_none=True)
 +				user_info=(user_entry.get_text(),password_entry.get_text())
 +				user=user_entry.get_text()
-+				ret=c.get_plugin("EpoptesServer").register_ip(user_info,"").get('status',None)
++				ret=c.register_ip(user_info,"EpoptesServer","").get('status',None)
 +				if ret==0:
 +					ok=True
 +				else:
