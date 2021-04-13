@@ -7,7 +7,7 @@ Subject: LliureX-common
  1 file changed, 55 insertions(+), 11 deletions(-)
 
 diff --git a/epoptes/common/config.py b/epoptes/common/config.py
-index 08c171d..ce1ae33 100644
+index 08c171d..192defb 100644
 --- a/epoptes/common/config.py
 +++ b/epoptes/common/config.py
 @@ -97,19 +97,38 @@ def read_shell_file(filename):

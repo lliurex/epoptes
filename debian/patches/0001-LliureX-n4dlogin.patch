@@ -7,7 +7,7 @@ Subject: LliureX-n4dlogin
  1 file changed, 160 insertions(+), 54 deletions(-)
 
 diff --git a/bin/epoptes b/bin/epoptes
-index 75d5ef3..bb1a0c7 100755
+index 75d5ef3..b834aea 100755
 --- a/bin/epoptes
 +++ b/bin/epoptes
 @@ -22,77 +22,183 @@ from gi.repository import Gtk
