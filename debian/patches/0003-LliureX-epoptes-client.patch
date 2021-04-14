@@ -7,7 +7,7 @@ Subject: LliureX-epoptes-client
  1 file changed, 245 insertions(+), 20 deletions(-)
 
 diff --git a/epoptes-client/epoptes-client b/epoptes-client/epoptes-client
-index 069e089..5569b5d 100755
+index 069e089..ddd6823 100755
 --- a/epoptes-client/epoptes-client
 +++ b/epoptes-client/epoptes-client
 @@ -1,4 +1,4 @@
