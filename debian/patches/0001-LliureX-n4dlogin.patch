@@ -1,16 +1,16 @@
-From: Juan Pelegrina <juapesai@hotmail.com>
-Date: Tue, 17 Nov 2020 11:21:23 +0100
-Subject: LliureX-n4dlogin
+From: jrpelegrina <juapesai@hotmail.com>
+Date: Wed, 14 Apr 2021 07:54:41 +0200
+Subject: Test2
 
 ---
- bin/epoptes | 214 +++++++++++++++++++++++++++++++++++++++++++++---------------
- 1 file changed, 160 insertions(+), 54 deletions(-)
+ bin/epoptes | 138 ++++++++++++++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 125 insertions(+), 13 deletions(-)
 
 diff --git a/bin/epoptes b/bin/epoptes
-index 75d5ef3..b834aea 100755
+index 75d5ef3..6eedfe6 100755
 --- a/bin/epoptes
 +++ b/bin/epoptes
-@@ -22,77 +22,183 @@ from gi.repository import Gtk
+@@ -22,6 +22,8 @@ from gi.repository import Gtk
  from twisted.internet import reactor
  from twisted.internet.protocol import ClientCreator
  
@@ -19,232 +19,186 @@ index 75d5ef3..b834aea 100755
  
  LOG = logger.Logger(__file__)
  
- 
- def connection_failed(failure):
--    """Errback for gui <=> daemon connection."""
--    msg = _("An error occurred while trying to connect to the epoptes service:")
--    msg += ' <i>' + failure.getErrorMessage() + '</i>\n\n'
--    LOG.c("Connection with epoptes failed:", failure.getErrorMessage())
--    # Permission denied error
--    if failure.value.osError == 13:
--        msg += _("User %s must be a member of group %s to run epoptes.") % \
+@@ -34,10 +36,11 @@ def connection_failed(failure):
+     # Permission denied error
+     if failure.value.osError == 13:
+         msg += _("User %s must be a member of group %s to run epoptes.") % \
 -              (getpass.getuser(), config.system['SOCKET_GROUP'])
--    # No such file error
--    elif failure.value.osError == 2:
--        msg += _("Make sure the epoptes service is running.")
--    dlg = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
-+	"""Errback for gui <=> daemon connection."""
-+	msg = _("An error occurred while trying to connect to the epoptes service:")
-+	msg += ' <i>' + failure.getErrorMessage() + '</i>\n\n'
-+	LOG.c("Connection with epoptes failed:", failure.getErrorMessage())
-+	# Permission denied error
-+	if failure.value.osError == 13:
-+		msg += _("User %s must be a member of group %s to run epoptes.") % \
-+		(getpass.getuser(), config.system['SOCKET_GROUP'])
-+	# No such file error
-+	elif failure.value.osError == 2:
-+		msg += _("Make sure the epoptes service is running.")
-+	
-+	dlg = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
++        (getpass.getuser(), config.system['SOCKET_GROUP'])
+     # No such file error
+     elif failure.value.osError == 2:
+         msg += _("Make sure the epoptes service is running.")
++    
+     dlg = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
                              buttons=Gtk.ButtonsType.OK)
--    dlg.set_markup(msg)
--    dlg.set_title(_('Service connection error'))
--    dlg.run()
--    dlg.destroy()
--    # noinspection PyUnresolvedReferences
--    reactor.stop()
-+	dlg.set_markup(msg)
-+	dlg.set_title(_('Service connection error'))
-+	dlg.run()
-+	dlg.destroy()
-+	# noinspection PyUnresolvedReferences
-+	reactor.stop()
+     dlg.set_markup(msg)
+@@ -48,27 +51,31 @@ def connection_failed(failure):
+     reactor.stop()
  
  
 -def need_sg_relaunch():
--    """After fresh installation, we need to relaunch with `sg`."""
--    # If we've already used sg once, don't retry it.
--    if os.getenv('EPOPTES_SG'):
++def need_sg_relaunch(is_member=None):
+     """After fresh installation, we need to relaunch with `sg`."""
+     # If we've already used sg once, don't retry it.
+     if os.getenv('EPOPTES_SG'):
+         return False
+     if not os.path.isfile('/usr/bin/sg'):
 -        return False
--    if not os.path.isfile('/usr/bin/sg'):
--        return False
--    socket = config.system['DIR'] + '/epoptes.socket'
--    if os.access(socket, os.W_OK):
--        return False
++        return [False,user_info]
+     socket = config.system['DIR'] + '/epoptes.socket'
+     if os.access(socket, os.W_OK):
+         return False
 -    try:
 -        epoptes_members = grp.getgrnam(config.system['SOCKET_GROUP']).gr_mem
 -    except KeyError:
 -        return False
 -    if getpass.getuser() not in epoptes_members:
--        return False
-+def need_sg_relaunch(is_member=None):
-+	"""After fresh installation, we need to relaunch with `sg`."""
-+	# If we've already used sg once, don't retry it.
-+	if os.getenv('EPOPTES_SG'):
-+		return False
-+	if not os.path.isfile('/usr/bin/sg'):
-+		return [False,user_info]
-+	socket = config.system['DIR'] + '/epoptes.socket'
-+	if os.access(socket, os.W_OK):
-+		return False
-+	if not is_member:
-+		try:
-+			epoptes_members = grp.getgrnam(config.system['SOCKET_GROUP']).gr_mem
-+		except KeyError:
-+			return False
-+		if getpass.getuser() not in epoptes_members:
-+			return False
-+	else:
-+		return False
++    if not is_member:
++        try:
++            epoptes_members = grp.getgrnam(config.system['SOCKET_GROUP']).gr_mem
++        except KeyError:
++            return False
++        if getpass.getuser() not in epoptes_members:
++            return False
++    else:
+         return False
      # At this point it makes sense to try relaunching.
      # The backgrounding is to allow sg and sh to terminate.
--    LOG.w('Relaunching epoptes using sg to gain group access')
--    subprocess.Popen(['/usr/bin/sg', config.system['SOCKET_GROUP'],
-+	LOG.w('Relaunching epoptes using sg to gain group access')
-+	subprocess.Popen(['/usr/bin/sg', config.system['SOCKET_GROUP'],
+     LOG.w('Relaunching epoptes using sg to gain group access')
+     subprocess.Popen(['/usr/bin/sg', config.system['SOCKET_GROUP'],
                        'EPOPTES_SG=True {} &'.format(' '.join(sys.argv))])
--    return True
-+	
-+	return True
++    
+     return True
  
  
- def main():
--    """Usage: epoptes [--version]."""
--    if len(sys.argv) > 1:
--        if sys.argv[1] in ('--version', '-version'):
--            print("Epoptes %s" % epoptes.__version__)
--            sys.exit(0)
-+	"""Usage: epoptes [--version]."""
-+	if len(sys.argv) > 1:
-+		if sys.argv[1] in ('--version', '-version'):
-+			print("Epoptes %s" % epoptes.__version__)
-+			sys.exit(0)
-+	# cd to the epoptes directory, so that all paths are relative
-+	if not os.path.isfile('epoptes.ui'):
-+		os.chdir('/usr/share/epoptes')
-+	
-+	try:
-+		ok=False
-+		msg=""
-+		user=os.environ["USER"]
-+		while not ok:
-+			def get_lang():
-+				lng=os.environ["LANGUAGE"].split(":")[0]
-+				if lng=="es_ES" or lng=="es":
-+					return "es"
-+				if 'valencia' in lng or lng=="ca":
-+					return "qcv"
-+				return "en"
-+			#def get_lang
-+			
-+			def get_translation(txt):
-+				try:
-+					t={}
-+					lang=get_lang()
-+					t["qcv"]={}
-+					t["es"]={}
-+					t["qcv"]["User"]="Usuari"
-+					t["es"]["User"]="Usuario"
-+					t["qcv"]["Password"]="Contrasenya"
-+					t["es"]["Password"]="Contraseña"			
-+					
-+					if lang in t:
-+						return t[lang][txt]
-+				except Exception as e:
-+					return txt
-+			
-+			#def get_tranlations
-+			
-+			dialog = Gtk.Dialog("n4d-epoptes",
-+			   None,
-+			   modal=True,)
-+			dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
-+			    Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT)
-+			    
-+			def manual_validate(widget):
-+				dialog.hide()
-+				
-+			img=Gtk.Image()
-+			img.set_from_file('/usr/share/epoptes/images/n4d-epoptes.svg')
-+			img.show()
-+			dialogBox=dialog.get_content_area()
-+			dialogBox.pack_start(img,False,True,5)
-+			
-+			hbox1=Gtk.Grid()
-+			user_entry=Gtk.Entry()
-+			user_entry.set_text(user)
-+			user_label=Gtk.Label(label=get_translation("User"))
-+			user_label.set_halign(Gtk.Align.START)
-+			user_label.set_valign(Gtk.Align.CENTER)
-+			password_entry=Gtk.Entry()
-+			password_entry.set_visibility(False)
-+			password_entry.connect("activate",manual_validate)
-+			password_label=Gtk.Label(label=get_translation("Password"))
-+			password_label.set_halign(Gtk.Align.START)
-+			password_label.set_valign(Gtk.Align.CENTER)
-+			hbox1.attach(user_label,0,0,0,1)
-+			hbox1.attach(user_entry,1,0,1,1)
-+			hbox1.attach(password_label,0,1,1,1)
-+			hbox1.attach(password_entry,1,1,1,2)
-+			dialogBox.pack_start(hbox1,False,True,5)
-+			msg_label=Gtk.Label()
-+			msg_label.set_markup(msg)
-+			dialogBox.pack_start(msg_label,False,True,5)
-+			dialogBox.show_all()
-+			response=dialog.run()
-+			dialog.hide()
-+			
-+			if response==-2 or response==-4:
-+				print("Exiting...")
-+				sys.exit(1)
-+			
-+			if response==-3 or response==-1:
-+				context=ssl._create_unverified_context()
-+				c=n4dclient.ServerProxy('https://server:9779',context=context,allow_none=True)
-+				user_info=(user_entry.get_text(),password_entry.get_text())
-+				user=user_entry.get_text()
-+				ret=c.register_ip(user_info,"EpoptesServer","").get('status',None)
-+				if ret==0:
-+					ok=True
-+				else:
-+					msg="<span foreground='red'>Error: " + str(ret) + "</span>"
-+		groups = [g.gr_name for g in grp.getgrall() if os.environ["USER"] in g.gr_mem]
-+		is_member=config.system['SOCKET_GROUP'] in groups
-+	except Exception as e:
-+		print(str(e))
-+		is_member=False
-+		sys.exit(1)
- 
--    # cd to the epoptes directory, so that all paths are relative
--    if not os.path.isfile('epoptes.ui'):
--        os.chdir('/usr/share/epoptes')
-+	
-+	if need_sg_relaunch(is_member):
-+		sys.exit(0)
-+	
-+	egui = gui.EpoptesGui()
-+	egui.n4d_user=user_info[0]
-+	egui.n4d_password=user_info[1]
-+	# noinspection PyUnresolvedReferences
+@@ -78,20 +85,125 @@ def main():
+         if sys.argv[1] in ('--version', '-version'):
+             print("Epoptes %s" % epoptes.__version__)
+             sys.exit(0)
+-
+     # cd to the epoptes directory, so that all paths are relative
+     if not os.path.isfile('epoptes.ui'):
+         os.chdir('/usr/share/epoptes')
++    
++    try:
++        ok=False
++        msg=""
++        user=os.environ["USER"]
++        while not ok:
++            def get_lang():
++                lng=os.environ["LANGUAGE"].split(":")[0]
++                if lng=="es_ES" or lng=="es":
++                    return "es"
++                if 'valencia' in lng or lng=="ca":
++                    return "qcv"
++                return "en"
++            #def get_lang
++            
++            def get_translation(txt):
++                try:
++                    t={}
++                    lang=get_lang()
++                    t["qcv"]={}
++                    t["es"]={}
++                    t["qcv"]["User"]="Usuari:"
++                    t["es"]["User"]="Usuario"
++                    t["qcv"]["Password"]="Contrasenya"
++                    t["es"]["Password"]="Contraseña"            
++                    
++                    if lang in t:
++                        return t[lang][txt]
++                    else:
++                        return txt
++                except Exception as e:
++                    return txt
++            
++            #def get_tranlations
++            
++            dialog = Gtk.Dialog("n4d-epoptes",
++               None,
++               modal=True,)
++            dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
++                Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT)
++                
++            def manual_validate(widget):
++                dialog.hide()
++                
++            img=Gtk.Image()
++            img.set_from_file('/usr/share/epoptes/images/n4d-epoptes.svg')
++            img.show()
++            dialogBox=dialog.get_content_area()
++            dialogBox.pack_start(img,False,True,5)
++            
++            hbox1=Gtk.Grid()
++            hbox1.set_row_spacing(5)
++            hbox1.set_column_spacing(5)
++            hbox1.props.margin_left = 10
++            hbox1.props.margin_right = 10
++            user_entry=Gtk.Entry()
++            user_entry.set_text(user)
++            user_label=Gtk.Label(label=get_translation("User"))
++            user_label.set_halign(Gtk.Align.END)
++            user_label.set_valign(Gtk.Align.CENTER)
++            password_entry=Gtk.Entry()
++            password_entry.set_visibility(False)
++            password_entry.connect("activate",manual_validate)
++            password_label=Gtk.Label(label=get_translation("Password"))
++            password_label.set_halign(Gtk.Align.END)
++            password_label.set_valign(Gtk.Align.CENTER)
++            hbox1.attach(user_label,0,0,1,1)
++            hbox1.attach(user_entry,1,0,1,1)
++            hbox1.attach(password_label,0,1,1,2)
++            hbox1.attach(password_entry,1,1,1,2)
++            dialogBox.pack_start(hbox1,False,True,5)
++            msg_label=Gtk.Label()
++            msg_label.set_markup(msg)
++            dialogBox.pack_start(msg_label,False,True,5)
++            dialogBox.show_all()
++            response=dialog.run()
++            dialog.hide()
++            
++            if response==-2 or response==-4:
++                print("Exiting...")
++                sys.exit(1)
++            
++            if response==-3 or response==-1:
++                context=ssl._create_unverified_context()
++                c=n4dclient.ServerProxy('https://server:9779',context=context,allow_none=True)
++                user_info=(user_entry.get_text(),password_entry.get_text())
++                user=user_entry.get_text()
++                ret=c.register_ip(user_info,"EpoptesServer","")
++                if ret.get('status',None)==0:
++                    ok=True
++                else:
++                    msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
++        groups = [g.gr_name for g in grp.getgrall() if os.environ["USER"] in g.gr_mem]
++        is_member=config.system['SOCKET_GROUP'] in groups
++    except Exception as e:
++        print(str(e))
++        is_member=False
++        sys.exit(1)
  
 -    if need_sg_relaunch():
--        sys.exit(0)
-+	dfr = ClientCreator(reactor, uiconnection.Daemon, egui)\
-+        .connectTCP("server",10000)
- 
--    egui = gui.EpoptesGui()
--    # noinspection PyUnresolvedReferences
--    dfr = ClientCreator(reactor, uiconnection.Daemon, egui)\
++    
++    if need_sg_relaunch(is_member):
+         sys.exit(0)
+-
++    
+     egui = gui.EpoptesGui()
++    egui.n4d_user=user_info[0]
++    egui.n4d_password=user_info[1]
+     # noinspection PyUnresolvedReferences
++
+     dfr = ClientCreator(reactor, uiconnection.Daemon, egui)\
 -        .connectUNIX(config.system['DIR'] + "/epoptes.socket")
--    dfr.addErrback(connection_failed)
--    # noinspection PyUnresolvedReferences
--    reactor.run()
-+ 	#dfr = ClientCreator(reactor, uiconnection.Daemon, egui)\
++        .connectTCP("server",10000)
++
++    #dfr = ClientCreator(reactor, uiconnection.Daemon, egui)\
 +    #    .connectUNIX(config.system['DIR'] + "/epoptes.socket")
 +    
-+	dfr.addErrback(connection_failed)
-+	#noinspection PyUnresolvedReferences
-+	reactor.run()
+     dfr.addErrback(connection_failed)
+-    # noinspection PyUnresolvedReferences
++    #noinspection PyUnresolvedReferences
+     reactor.run()
  
  
- if __name__ == '__main__':

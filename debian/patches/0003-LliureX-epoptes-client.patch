@@ -330,8 +330,8 @@ index 069e089..5569b5d 100755
 +		echo "-----SOCAT se va a ejecutar para el usuario: $USER -----">> $log_file
 +		sleep 20
 +		date_create=$(date)
-+		echo "socat openssl-connect:$SERVER:$PORT,$cert_param,interval=60,forever EXEC:'$cmdline',sigint,sigquit,sigterm" >> $log_file
-+		socat openssl-connect:$SERVER:$PORT,$cert_param,interval=60,forever EXEC:"$cmdline",sigint,sigquit
++		echo "socat openssl-connect:$SERVER:$PORT,$cert_param,commonname="",interval=60,forever EXEC:'$cmdline',sigint,sigquit,sigterm" >> $log_file
++		socat openssl-connect:$SERVER:$PORT,$cert_param,commonname="",interval=60,forever EXEC:"$cmdline",sigint,sigquit
 +		echo "-------------------------------------" $log_file
 +		echo "Muere el SOCAT del usuario: $USER creado: $date_create">> $log_file
 +		date >> $log_file
