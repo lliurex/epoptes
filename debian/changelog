@@ -1,3 +1,10 @@
+epoptes (1:20.01-1~ubuntu20.04.1+lliurex4) focal; urgency=medium
+
+  * Fixed epoptes-client pacth to add commonname in socat command
+  * Fixed login screen patch to improve performance
+
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Wed, 14 Apr 2021 08:18:18 +0200
+
 epoptes (1:20.01-1~ubuntu20.04.1+lliurex3) focal; urgency=medium
 
   * Fixed some patches
