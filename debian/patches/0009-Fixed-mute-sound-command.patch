@@ -1,0 +1,29 @@
+From: jrpelegrina <juapesai@hotmail.com>
+Date: Thu, 1 Jul 2021 15:43:45 +0200
+Subject: Fixed mute sound command
+
+---
+ epoptes/ui/gui.py | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/epoptes/ui/gui.py b/epoptes/ui/gui.py
+index bf16137..9184afd 100644
+--- a/epoptes/ui/gui.py
++++ b/epoptes/ui/gui.py
+@@ -529,9 +529,15 @@ class EpoptesGui(object):
+     # END LLIUREX                
+     def on_imi_restrictions_mute_sound_activate(self, _widget):
+         """Handle imi_restrictions_mute_sound.activate event."""
++        '''
++        START LLIUREX
+         self.exec_on_selected_clients(
+             ['mute_sound', 0], mode=EM_SYSTEM_OR_SESSION)
+-
++        '''
++        self.exec_on_selected_clients(
++            ['mute_sound', 0], mode=EM_SYSTEM_AND_SESSION)
++         # END LLIUREX
++      
+     def on_imi_restrictions_unmute_sound_activate(self, _widget):
+         """Handle imi_restrictions_unmute_sound.activate event."""
+         self.exec_on_selected_clients(
