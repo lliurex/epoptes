@@ -1,3 +1,9 @@
+epoptes (1:20.01-1~ubuntu20.04.3+lliurex5) focal; urgency=medium
+
+  * Fixed mute sound command
+  
+ -- Juan Ramon Pelegrina <juapesai@hotmail.com>  Thu, 01 Jul 2021 15:45:56 +0200
+
 epoptes (1:20.01-1~ubuntu20.04.2) focal; urgency=medium
 
   * New group validation for CDC.
