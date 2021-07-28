@@ -49,6 +49,11 @@ for p in $(pgrep -x 'ldm|gdmgreeter|kdm_greet|lxdm-greeter-gt|dbus-daemon'); do
     exit_if_found
 done
 
+# Plan B2 (by Canx https://gist.github.com/Canx/db2692a29e399ee7e2c97aebd837f4c0 ): test sddm Xauthority file if not logged in
+XAUTHORITY="$(/usr/bin/find /var/run/sddm/ -type f)"
+DISPLAY=":0"
+exit_if_found
+
 # Plan C: try ck-list-sessions
 while read var equals value; do
     case "$var" in
