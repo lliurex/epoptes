@@ -7,3 +7,4 @@
 0007-fix-groups-for-CDC.patch
 0008-Adding-pwd-import.patch
 0009-Fixed-mute-sound-command.patch
+0010-Read-correctly-user-groups.patch
