@@ -1,3 +1,9 @@
+epoptes (1:20.01-1~ubuntu20.04.3+lliurex6) jammy; urgency=medium
+
+  * no-sni to socat 
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Tue, 27 Feb 2024 08:37:51 +0100
+
 epoptes (1:20.01-1~ubuntu20.04.3+lliurex5) focal; urgency=medium
 
   * Fixed mute sound command
