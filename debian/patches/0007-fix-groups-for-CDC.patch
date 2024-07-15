@@ -1,0 +1,35 @@
+From: daduve <daduve@gmail.com>
+Date: Fri, 25 Jun 2021 11:37:12 +0200
+Subject: fix groups for CDC
+
+---
+ bin/epoptes | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/bin/epoptes b/bin/epoptes
+index 6eedfe6..f581933 100755
+--- a/bin/epoptes
++++ b/bin/epoptes
+@@ -63,10 +63,20 @@ def need_sg_relaunch(is_member=None):
+         return False
+     if not is_member:
+         try:
+-            epoptes_members = grp.getgrnam(config.system['SOCKET_GROUP']).gr_mem
++            #old groups method
++            #epoptes_members = grp.getgrnam(config.system['SOCKET_GROUP']).gr_mem
++
++            user=getpass.getuser()
++            gid = pwd.getpwnam(user).pw_gid
++            groups_gids = os.getgrouplist(user, gid)
++            user_groups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
+         except KeyError:
+             return False
+-        if getpass.getuser() not in epoptes_members:
++
++        #old groups method
++        #if getpass.getuser() not in epoptes_members:
++
++        if config.system['SOCKET_GROUP'] not in  user_groups:
+             return False
+     else:
+         return False

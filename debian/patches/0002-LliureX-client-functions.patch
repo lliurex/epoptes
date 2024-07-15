@@ -1,0 +1,116 @@
+From: Juan Pelegrina <juapesai@hotmail.com>
+Date: Tue, 17 Nov 2020 11:22:40 +0100
+Subject: LliureX-client-functions
+
+---
+ data/client-functions | 45 +++++++++++++++++++++++++++++++++------------
+ 1 file changed, 33 insertions(+), 12 deletions(-)
+
+diff --git a/data/client-functions b/data/client-functions
+index c6b9881..b6d5506 100644
+--- a/data/client-functions
++++ b/data/client-functions
+@@ -155,18 +155,23 @@ EOF
+ background() {
+     local print_pid
+ 
+-    ensure_display
++    #ensure_display
+     if [ "$1" = "-p" ]; then
+         print_pid=true
+         shift
+     fi
++    
++    # On root clients, try to get the active DISPLAY, the command may need it.
++    test "$UID" -eq 0 && export $(./get-display)
++
+     # The command is run on a subshell with stdin and stdout redirected to
+     # /dev/null, so that it doesn't interfere with the output of other commands.
+     # stderr isn't changed, i.e. ~/.xsession-errors will be used.
+     # See issues #58 and #103 for explanation of the following syntax.
+-    ( unset DESKTOP_AUTOSTART_ID; exec 0</dev/null >/dev/null; "$@" ) &
+-
++    #( unset DESKTOP_AUTOSTART_ID; exec 0</dev/null >/dev/null; "$@" ) &
++    ( "$@" 0</dev/null >/dev/null ) &
+     test -n "$print_pid" && echo $!
++    
+ }
+ 
+ # Execute a command in the background.
+@@ -340,7 +345,8 @@ message() {
+ # Parameters:
+ # $1 = port.
+ get_monitored() {
+-    background x11vnc -noshm -24to32 -viewonly -connect_or_exit "$SERVER:$1"
++    #background x11vnc -noshm -24to32 -viewonly -connect_or_exit "$SERVER:$1"
++    background x11vnc -noshm -24to32 -viewonly -connect_or_exit "$1"
+ }
+ 
+ # Connect to the server to get assistance.
+@@ -348,7 +354,8 @@ get_monitored() {
+ # $1 = port.
+ # $2 = grab keyboard and mouse.
+ get_assisted() {
+-    background x11vnc -noshm -24to32 ${2:+-grabptr -grabkbd} -connect_or_exit "$SERVER:$1"
++    #background x11vnc -noshm -24to32 ${2:+-grabptr -grabkbd} -connect_or_exit "$SERVER:$1"
++    background x11vnc -noshm -24to32 ${2:+-grabptr -grabkbd} -connect_or_exit "$1"
+ }
+ 
+ # Deactivate the screensaver, in order for the users to watch a broadcast.
+@@ -382,17 +389,27 @@ receive_broadcast() {
+     printf "$2" | {
+         sleep 0.$(($(hexdump -e \"%d\" -n 2 /dev/urandom) % 50 + 50))
+         if [ "$VNCVIEWER" = "ssvncviewer" ]; then
++            #exec ssvncviewer -shared -viewonly -passwd /dev/stdin \
++                 #${3:+-fullscreen} "$SERVER:$1"
+             exec ssvncviewer -shared -viewonly -passwd /dev/stdin \
+-                ${3:+-fullscreen} "$SERVER:$1"
+-        elif [ "$VNCVIEWER" = "xvnc4viewer" ]; then
++                ${3:+-fullscreen} "$1"
++         elif [ "$VNCVIEWER" = "xvnc4viewer" ]; then
++            #exec ${VNCVIEWER} -Shared -ViewOnly -passwd /dev/stdin \
++                #${3:+-FullScreen -UseLocalCursor=0 -MenuKey F13} "$SERVER:$1"
+             exec ${VNCVIEWER} -Shared -ViewOnly -passwd /dev/stdin \
+-                ${3:+-FullScreen -UseLocalCursor=0 -MenuKey F13} "$SERVER:$1"
+-        elif [ "$VNCVIEWER" = "xtigervncviewer" ]; then
++                ${3:+-FullScreen -UseLocalCursor=0 -MenuKey F13} "$1"
++         elif [ "$VNCVIEWER" = "xtigervncviewer" ]; then
++            
++            #exec ${VNCVIEWER} -Shared -ViewOnly -passwd /dev/stdin \
++	            #${3:+-FullScreen -MenuKey F13} "$SERVER:$1"
+             exec ${VNCVIEWER} -Shared -ViewOnly -passwd /dev/stdin \
+-                ${3:+-FullScreen -MenuKey F13} "$SERVER:$1"
++                ${3:+-FullScreen -MenuKey F13} "$1"
+         else
++        	
++        	#exec vncviewer -shared -viewonly -passwd /dev/stdin \
++                #${3:+-fullscreen} "$SERVER:$1"
+             exec vncviewer -shared -viewonly -passwd /dev/stdin \
+-                ${3:+-fullscreen} "$SERVER:$1"
++                ${3:+-fullscreen} "$1"
+         fi
+     } >/dev/null 2>&1 &
+     xprop_set EPOPTES_VNCVIEWER_PID "$!"
+@@ -421,9 +438,12 @@ root_term() {
+ # Parameters:
+ # $1 = port.
+ remote_term() {
++	
+     local screen_params
+ 
++    REM=$1
+     if [ "$UID" -eq 0 ]; then
++        REM="$SERVER:${1#*:}"
+         screen_params="bash -l"
+     else
+         screen_params="-l"
+@@ -431,7 +451,8 @@ remote_term() {
+     background sh -c "
+ cd
+ sleep 1
+-TERM=xterm exec socat EXEC:'screen $screen_params',pty,stderr tcp:$SERVER:$1"
++TERM=xterm exec socat EXEC:'screen $screen_params',pty,stderr tcp:$REM"
++
+ }
+ 
+ # Ping is called every few seconds just to make sure the connection is alive.

@@ -1,0 +1,20 @@
+From: daduve <daduve@gmail.com>
+Date: Wed, 30 Jun 2021 10:59:48 +0200
+Subject: Adding pwd import
+
+---
+ bin/epoptes | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/bin/epoptes b/bin/epoptes
+index f581933..f1e6181 100755
+--- a/bin/epoptes
++++ b/bin/epoptes
+@@ -7,6 +7,7 @@ Launch the epoptes UI.
+ """
+ import getpass
+ import grp
++import pwd
+ import os
+ import os.path
+ import subprocess

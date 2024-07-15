@@ -1,0 +1,29 @@
+From: Raul Rodrigo Segura <raurodse@gmail.com>
+Date: Mon, 11 Apr 2022 12:50:43 +0200
+Subject: Read correctly user groups
+
+---
+ bin/epoptes | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/bin/epoptes b/bin/epoptes
+index f1e6181..80382e0 100755
+--- a/bin/epoptes
++++ b/bin/epoptes
+@@ -191,7 +191,15 @@ def main():
+                     ok=True
+                 else:
+                     msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
+-        groups = [g.gr_name for g in grp.getgrall() if os.environ["USER"] in g.gr_mem]
++
++        #old groups method
++        #groups = [g.gr_name for g in grp.getgrall() if os.environ["USER"] in g.gr_mem]
++
++        user=getpass.getuser()
++        gid = pwd.getpwnam(user).pw_gid
++        groups_gids = os.getgrouplist(user, gid)
++        groups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
++
+         is_member=config.system['SOCKET_GROUP'] in groups
+     except Exception as e:
+         print(str(e))
