@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-22 08:45+0300\n"
+"POT-Creation-Date: 2024-07-15 22:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,12 +17,101 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../epoptes/ui/gtk/exec_command.ui.h:1 ../epoptes/ui/gtk/epoptes.ui.h:59
-msgid "Execute command"
+#: ../epoptes/ui/gtk/send_message.ui.h:1 ../epoptes/ui/gtk/epoptes.ui.h:60
+msgid "Send message"
 msgstr ""
 
-#: ../epoptes/ui/gtk/exec_command.ui.h:2
-msgid "URL, file or command to execute on the selected clients:"
+#: ../epoptes/ui/gtk/send_message.ui.h:2
+msgid "_Send"
+msgstr ""
+
+#: ../epoptes/ui/gtk/send_message.ui.h:3
+msgid "Message title:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/send_message.ui.h:4
+msgid "Message text:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/send_message.ui.h:5
+msgid "Use Pango markup"
+msgstr ""
+
+#: ../epoptes/ui/gtk/send_message.ui.h:6 ../epoptes/ui/gtk/epoptes.ui.h:64
+msgid "Information"
+msgstr ""
+
+#: ../epoptes/ui/gtk/send_message.ui.h:7 ../epoptes/ui/gtk/benchmark.ui.h:1
+#: ../epoptes/ui/gui.py:1298 ../epoptes/ui/benchmark.py:73
+msgid "Warning"
+msgstr ""
+
+#: ../epoptes/ui/gtk/send_message.ui.h:8 ../epoptes/ui/benchmark.py:80
+msgid "Error"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.ui.h:1
+msgid "Graphics (VNC)"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.ui.h:2
+msgid "Console (screen)"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.ui.h:3
+#: ../epoptes/ui/gtk/epoptes.ui.h:51
+msgid "Remote support"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.ui.h:4
+msgid ""
+"Enter the information of the contact you want to share your Desktop with"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.ui.h:5
+msgid "Method:"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.ui.h:6
+msgid "Host:"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.ui.h:7
+msgid "Connection information"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.ui.h:8
+msgid "Keep reconnecting"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.ui.h:9
+#: ../potfiles-workaround/remote_assistance.py:90
+#: ../potfiles-workaround/remote_assistance.py:122
+msgid "Not connected"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.ui.h:10
+msgid "Status"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.py:114
+#, python-format
+msgid "Connecting to %s..."
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.py:119
+#, python-format
+msgid "Connected to %s"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.py:126
+#, python-format
+msgid "Failed to connect to %s"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.py:143
+#, python-format
+msgid "Retrying in %d..."
 msgstr ""
 
 #: ../epoptes/ui/gtk/epoptes.ui.h:1
@@ -225,11 +314,6 @@ msgstr ""
 msgid "Live chat (IRC)"
 msgstr ""
 
-#: ../epoptes/ui/gtk/epoptes.ui.h:51
-#: ../potfiles-workaround/remote_assistance.ui.h:3
-msgid "Remote support"
-msgstr ""
-
 #: ../epoptes/ui/gtk/epoptes.ui.h:52
 msgid "Boot selected clients (Wake On LAN)"
 msgstr ""
@@ -258,8 +342,8 @@ msgstr ""
 msgid "Stop all broadcasts on every client"
 msgstr ""
 
-#: ../epoptes/ui/gtk/epoptes.ui.h:60 ../epoptes/ui/gtk/send_message.ui.h:1
-msgid "Send message"
+#: ../epoptes/ui/gtk/epoptes.ui.h:59 ../epoptes/ui/gtk/exec_command.ui.h:1
+msgid "Execute command"
 msgstr ""
 
 #: ../epoptes/ui/gtk/epoptes.ui.h:61
@@ -274,10 +358,6 @@ msgstr ""
 msgid "Show information for the selected client"
 msgstr ""
 
-#: ../epoptes/ui/gtk/epoptes.ui.h:64 ../epoptes/ui/gtk/send_message.ui.h:6
-msgid "Information"
-msgstr ""
-
 #: ../epoptes/ui/gtk/epoptes.ui.h:65
 msgid "Groups"
 msgstr ""
@@ -290,33 +370,33 @@ msgstr ""
 msgid "Remove the selected group"
 msgstr ""
 
-#: ../epoptes/ui/notifications.py:79
-msgid "Could not initialize notifications!"
+#: ../epoptes/ui/gtk/about.ui.h:1
+msgid "Copyright © 2010+ The Epoptes Team"
 msgstr ""
 
-#: ../epoptes/ui/gtk/send_message.ui.h:2
-msgid "_Send"
+#: ../epoptes/ui/gtk/about.ui.h:2
+msgid "A computer lab management and monitoring tool."
 msgstr ""
 
-#: ../epoptes/ui/gtk/send_message.ui.h:3
-msgid "Message title:"
+#: ../epoptes/ui/gtk/about.ui.h:3
+msgid "translator-credits"
 msgstr ""
 
-#: ../epoptes/ui/gtk/send_message.ui.h:4
-msgid "Message text:"
+#: ../bin/epoptes.py:34
+msgid "An error occurred while trying to connect to the epoptes service:"
 msgstr ""
 
-#: ../epoptes/ui/gtk/send_message.ui.h:5
-msgid "Use Pango markup"
+#: ../bin/epoptes.py:39
+#, python-format
+msgid "User %s must be a member of group %s to run epoptes."
 msgstr ""
 
-#: ../epoptes/ui/gtk/send_message.ui.h:7 ../epoptes/ui/gui.py:1062
-#: ../epoptes/ui/benchmark.py:73 ../epoptes/ui/gtk/benchmark.ui.h:1
-msgid "Warning"
+#: ../bin/epoptes.py:43
+msgid "Make sure the epoptes service is running."
 msgstr ""
 
-#: ../epoptes/ui/gtk/send_message.ui.h:8 ../epoptes/ui/benchmark.py:80
-msgid "Error"
+#: ../bin/epoptes.py:48 ../epoptes/ui/gui.py:891
+msgid "Service connection error"
 msgstr ""
 
 #: ../epoptes/ui/gtk/client_information.ui.h:1
@@ -361,227 +441,6 @@ msgstr ""
 
 #: ../epoptes/ui/gtk/client_information.ui.h:11
 msgid "Set a new alias for the selected client"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:106
-msgid "Detected clients"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:211
-msgid "Are you sure you want to log off all the users?"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:217
-msgid "Are you sure you want to reboot all the computers?"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:223
-msgid "Are you sure you want to shutdown all the computers?"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:375
-msgid "The screen is locked by a system administrator."
-msgstr ""
-
-#: ../epoptes/ui/gui.py:405
-#, python-format
-msgid ""
-"Are you sure you want to remove the selected client(s) from group \"%s\"?"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:536
-msgid "New group"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:553
-#, python-format
-msgid "Are you sure you want to remove group \"%s\"?"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:598
-#, python-format
-msgid "%d clients selected"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:695
-msgid "Lost connection with the epoptes service."
-msgstr ""
-
-#: ../epoptes/ui/gui.py:697
-msgid "Make sure the service is running and then restart epoptes."
-msgstr ""
-
-#: ../epoptes/ui/gui.py:700 ../bin/epoptes.py:44
-msgid "Service connection error"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:728
-msgid "Shut down:"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:736
-msgid "Disconnected:"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:737
-#, python-format
-msgid "%(user)s from %(host)s"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:845
-#, python-format
-msgid ""
-"A connection attempt was made by a client with version %s, which is "
-"incompatible with the current epoptes version.\n"
-"\n"
-"You need to update your clients to the latest epoptes-client version."
-msgstr ""
-
-#: ../epoptes/ui/gui.py:875
-msgid "Connected:"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:876
-#, python-format
-msgid "%(user)s on %(host)s"
-msgstr ""
-
-#: ../epoptes/ui/gui.py:1053
-msgid "Confirm action"
-msgstr ""
-
-#: ../bin/epoptes.py:31
-msgid "An error occurred while trying to connect to the epoptes service:"
-msgstr ""
-
-#: ../bin/epoptes.py:36
-#, python-format
-msgid "User %s must be a member of group %s to run epoptes."
-msgstr ""
-
-#: ../bin/epoptes.py:40
-msgid "Make sure the epoptes service is running."
-msgstr ""
-
-#: ../data/epoptes.desktop.in.h:1
-msgid "Epoptes computer lab administration tool"
-msgstr ""
-
-#: ../epoptes/ui/benchmark.py:96
-msgid "There are no selected clients to run the benchmark on."
-msgstr ""
-
-#: ../epoptes/ui/benchmark.py:112
-msgid ""
-"All of the selected clients are either offline, or do not have epoptes-"
-"client running as root."
-msgstr ""
-
-#: ../epoptes/ui/benchmark.py:117
-msgid ""
-"The following clients will be excluded from the benchmark because they are "
-"either offline, or do not have epoptes-client running as root."
-msgstr ""
-
-#: ../epoptes/ui/benchmark.py:143 ../epoptes/ui/benchmark.py:152
-#, python-format
-msgid "Benchmark finishing in %d seconds..."
-msgstr ""
-
-#: ../epoptes/ui/benchmark.py:155
-msgid "Some clients didn't respond in time!"
-msgstr ""
-
-#: ../epoptes/ui/benchmark.py:156
-#, python-format
-msgid "Waiting for %d more seconds..."
-msgstr ""
-
-#: ../epoptes/ui/benchmark.py:213
-msgid ""
-"Did not get measurements from any of the clients. Check your network "
-"settings."
-msgstr ""
-
-#: ../epoptes/ui/gtk/about.ui.h:1
-msgid "Copyright © 2011-2018 The Epoptes Team"
-msgstr ""
-
-#: ../epoptes/ui/gtk/about.ui.h:2
-msgid "A computer lab management and monitoring tool."
-msgstr ""
-
-#: ../epoptes/ui/gtk/about.ui.h:3
-msgid "translator-credits"
-msgstr ""
-
-#. TODO: consider new string formatting vs updating translations
-#: ../epoptes/ui/client_information.py:66
-#, python-format
-msgid "Properties of %s"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.py:90
-#: ../potfiles-workaround/remote_assistance.py:122
-#: ../potfiles-workaround/remote_assistance.ui.h:9
-msgid "Not connected"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.py:114
-#, python-format
-msgid "Connecting to %s..."
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.py:119
-#, python-format
-msgid "Connected to %s"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.py:126
-#, python-format
-msgid "Failed to connect to %s"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.py:143
-#, python-format
-msgid "Retrying in %d..."
-msgstr ""
-
-#: ../epoptes/common/config.py:194
-msgid "Message from administrator"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.ui.h:1
-msgid "Graphics (VNC)"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.ui.h:2
-msgid "Console (screen)"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.ui.h:4
-msgid ""
-"Enter the information of the contact you want to share your Desktop with"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.ui.h:5
-msgid "Method:"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.ui.h:6
-msgid "Host:"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.ui.h:7
-msgid "Connection information"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.ui.h:8
-msgid "Keep reconnecting"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.ui.h:10
-msgid "Status"
 msgstr ""
 
 #: ../epoptes/ui/gtk/benchmark.ui.h:2
@@ -658,4 +517,153 @@ msgstr ""
 
 #: ../epoptes/ui/gtk/benchmark.ui.h:21
 msgid "Total server download:"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:113
+msgid "Detected clients"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:143
+msgid "Failed to read the groups file:"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:145
+msgid "You may need to restore your groups from a backup!"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:282
+msgid "Are you sure you want to log off all the users?"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:288
+msgid "Are you sure you want to reboot all the computers?"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:294
+msgid "Are you sure you want to shutdown all the computers?"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:490
+msgid "The screen is locked by a system administrator."
+msgstr ""
+
+#: ../epoptes/ui/gui.py:588
+#, python-format
+msgid ""
+"Are you sure you want to remove the selected client(s) from group \"%s\"?"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:726
+msgid "New group"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:743
+#, python-format
+msgid "Are you sure you want to remove group \"%s\"?"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:788
+#, python-format
+msgid "%d clients selected"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:886
+msgid "Lost connection with the epoptes service."
+msgstr ""
+
+#: ../epoptes/ui/gui.py:888
+msgid "Make sure the service is running and then restart epoptes."
+msgstr ""
+
+#: ../epoptes/ui/gui.py:919
+msgid "Shut down:"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:927
+msgid "Disconnected:"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:928
+#, python-format
+msgid "%(user)s from %(host)s"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:1077
+#, python-format
+msgid ""
+"A connection attempt was made by a client with version %s, which is "
+"incompatible with the current epoptes version.\n"
+"\n"
+"You need to update your clients to the latest epoptes-client version."
+msgstr ""
+
+#: ../epoptes/ui/gui.py:1106
+msgid "Connected:"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:1107
+#, python-format
+msgid "%(user)s on %(host)s"
+msgstr ""
+
+#: ../epoptes/ui/gui.py:1289
+msgid "Confirm action"
+msgstr ""
+
+#: ../epoptes/common/config.py:190
+msgid "Message from administrator"
+msgstr ""
+
+#: ../data/epoptes.desktop.in.h:1
+msgid "Epoptes computer lab administration tool"
+msgstr ""
+
+#: ../epoptes/ui/notifications.py:81
+msgid "Could not initialize notifications!"
+msgstr ""
+
+#: ../epoptes/ui/gtk/exec_command.ui.h:2
+msgid "URL, file or command to execute on the selected clients:"
+msgstr ""
+
+#. TODO: consider new string formatting vs updating translations
+#: ../epoptes/ui/client_information.py:66
+#, python-format
+msgid "Properties of %s"
+msgstr ""
+
+#: ../epoptes/ui/benchmark.py:96
+msgid "There are no selected clients to run the benchmark on."
+msgstr ""
+
+#: ../epoptes/ui/benchmark.py:112
+msgid ""
+"All of the selected clients are either offline, or do not have epoptes-"
+"client running as root."
+msgstr ""
+
+#: ../epoptes/ui/benchmark.py:117
+msgid ""
+"The following clients will be excluded from the benchmark because they are "
+"either offline, or do not have epoptes-client running as root."
+msgstr ""
+
+#: ../epoptes/ui/benchmark.py:143 ../epoptes/ui/benchmark.py:152
+#, python-format
+msgid "Benchmark finishing in %d seconds..."
+msgstr ""
+
+#: ../epoptes/ui/benchmark.py:155
+msgid "Some clients didn't respond in time!"
+msgstr ""
+
+#: ../epoptes/ui/benchmark.py:156
+#, python-format
+msgid "Waiting for %d more seconds..."
+msgstr ""
+
+#: ../epoptes/ui/benchmark.py:213
+msgid ""
+"Did not get measurements from any of the clients. Check your network "
+"settings."
 msgstr ""
