@@ -86,11 +86,15 @@ class ServiceMaker(object):
             os.makedirs(config.system['DIR'], 0o2770)
         os.chmod(config.system['DIR'], 0o2770)
         os.chown(config.system['DIR'], -1, gid)
-
+        
+        gui_service = internet.TCPServer(
+            10000,
+            guiplex.GUIFactory())
+        '''
         gui_service = internet.UNIXServer(
             "%s/epoptes.socket" % config.system['DIR'],
             guiplex.GUIFactory())
-
+        '''
         top_service = service.MultiService()
         top_service.addService(client_service)
         top_service.addService(gui_service)

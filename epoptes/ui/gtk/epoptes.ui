@@ -107,7 +107,7 @@
   <object class="GtkImage" id="img_restrictions_block_internet">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">network-offline</property>
+    <property name="pixbuf">images/16/block-internet.png</property>
   </object>
   <object class="GtkImage" id="img_restrictions_lock_screen">
     <property name="visible">True</property>
@@ -122,7 +122,7 @@
   <object class="GtkImage" id="img_restrictions_unblock_internet">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">connect_established</property>
+    <property name="pixbuf">images/16/unblock-internet.png</property>
   </object>
   <object class="GtkImage" id="img_restrictions_unlock_screen">
     <property name="visible">True</property>
@@ -184,10 +184,20 @@
     <property name="can_focus">False</property>
     <property name="pixbuf">images/message.svg</property>
   </object>
+  <object class="GtkImage" id="img_tlb_restrictions_internet">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">images/16/block-internet.png</property>
+  </object>
   <object class="GtkImage" id="img_tlb_restrictions_lock_screen">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">images/lock-screen.svg</property>
+  </object>
+  <object class="GtkImage" id="img_tlb_restrictions_unlock_internet">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">images/16/unblock-internet.png</property>
   </object>
   <object class="GtkImage" id="img_tlb_restrictions_unlock_screen">
     <property name="visible">True</property>
@@ -615,21 +625,21 @@
                             <child>
                               <object class="GtkImageMenuItem" id="imi_restrictions_block_internet">
                                 <property name="label" translatable="yes">Block Internet</property>
-                                <property name="sensitive">False</property>
+                                <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_underline">True</property>
                                 <property name="image">img_restrictions_block_internet</property>
                                 <property name="use_stock">False</property>
+                                <signal name="activate" handler="blockInternet" swapped="no"/>
                               </object>
                             </child>
                             <child>
                               <object class="GtkImageMenuItem" id="imi_restrictions_unblock_internet">
                                 <property name="label" translatable="yes">Unblock Internet</property>
-                                <property name="sensitive">False</property>
+                                <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="use_underline">True</property>
                                 <property name="image">img_restrictions_unblock_internet</property>
                                 <property name="use_stock">False</property>
+                                <signal name="activate" handler="unblockInternet" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -703,7 +713,6 @@
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="imi_clients_network_benchmark">
-                        <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Network Benchmark</property>
                         <property name="use_underline">True</property>
@@ -1061,6 +1070,46 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="homogeneous">False</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="tlb_restrictions_block_internet">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Block Internet</property>
+                <property name="label" translatable="yes">Lock Internet</property>
+                <property name="use_underline">True</property>
+                <property name="icon_widget">img_tlb_restrictions_internet</property>
+                <signal name="clicked" handler="blockInternet" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkToolButton" id="tlb_restrictions_unblock_internet">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Unblock Internet</property>
+                <property name="label" translatable="yes">Unblock Internet</property>
+                <property name="use_underline">True</property>
+                <property name="icon_widget">img_tlb_restrictions_unlock_internet</property>
+                <signal name="clicked" handler="unblockInternet" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparatorToolItem">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="homogeneous">True</property>
               </packing>
             </child>
             <child>
