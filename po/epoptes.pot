@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-15 22:26+0200\n"
+"POT-Creation-Date: 2024-07-15 23:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,37 +17,21 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../epoptes/ui/gtk/send_message.ui.h:1 ../epoptes/ui/gtk/epoptes.ui.h:60
-msgid "Send message"
+#: ../bin/epoptes.py:34
+msgid "An error occurred while trying to connect to the epoptes service:"
 msgstr ""
 
-#: ../epoptes/ui/gtk/send_message.ui.h:2
-msgid "_Send"
+#: ../bin/epoptes.py:39
+#, python-format
+msgid "User %s must be a member of group %s to run epoptes."
 msgstr ""
 
-#: ../epoptes/ui/gtk/send_message.ui.h:3
-msgid "Message title:"
+#: ../bin/epoptes.py:43
+msgid "Make sure the epoptes service is running."
 msgstr ""
 
-#: ../epoptes/ui/gtk/send_message.ui.h:4
-msgid "Message text:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/send_message.ui.h:5
-msgid "Use Pango markup"
-msgstr ""
-
-#: ../epoptes/ui/gtk/send_message.ui.h:6 ../epoptes/ui/gtk/epoptes.ui.h:64
-msgid "Information"
-msgstr ""
-
-#: ../epoptes/ui/gtk/send_message.ui.h:7 ../epoptes/ui/gtk/benchmark.ui.h:1
-#: ../epoptes/ui/gui.py:1298 ../epoptes/ui/benchmark.py:73
-msgid "Warning"
-msgstr ""
-
-#: ../epoptes/ui/gtk/send_message.ui.h:8 ../epoptes/ui/benchmark.py:80
-msgid "Error"
+#: ../bin/epoptes.py:48 ../epoptes/ui/gui.py:891
+msgid "Service connection error"
 msgstr ""
 
 #: ../potfiles-workaround/remote_assistance.ui.h:1
@@ -94,24 +78,16 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: ../potfiles-workaround/remote_assistance.py:114
-#, python-format
-msgid "Connecting to %s..."
+#: ../epoptes/ui/gtk/about.ui.h:1
+msgid "Copyright © 2010+ The Epoptes Team"
 msgstr ""
 
-#: ../potfiles-workaround/remote_assistance.py:119
-#, python-format
-msgid "Connected to %s"
+#: ../epoptes/ui/gtk/about.ui.h:2
+msgid "A computer lab management and monitoring tool."
 msgstr ""
 
-#: ../potfiles-workaround/remote_assistance.py:126
-#, python-format
-msgid "Failed to connect to %s"
-msgstr ""
-
-#: ../potfiles-workaround/remote_assistance.py:143
-#, python-format
-msgid "Retrying in %d..."
+#: ../epoptes/ui/gtk/about.ui.h:3
+msgid "translator-credits"
 msgstr ""
 
 #: ../epoptes/ui/gtk/epoptes.ui.h:1
@@ -346,6 +322,10 @@ msgstr ""
 msgid "Execute command"
 msgstr ""
 
+#: ../epoptes/ui/gtk/epoptes.ui.h:60 ../epoptes/ui/gtk/send_message.ui.h:1
+msgid "Send message"
+msgstr ""
+
 #: ../epoptes/ui/gtk/epoptes.ui.h:61
 msgid "Lock screen of the selected clients"
 msgstr ""
@@ -358,6 +338,10 @@ msgstr ""
 msgid "Show information for the selected client"
 msgstr ""
 
+#: ../epoptes/ui/gtk/epoptes.ui.h:64 ../epoptes/ui/gtk/send_message.ui.h:6
+msgid "Information"
+msgstr ""
+
 #: ../epoptes/ui/gtk/epoptes.ui.h:65
 msgid "Groups"
 msgstr ""
@@ -368,155 +352,6 @@ msgstr ""
 
 #: ../epoptes/ui/gtk/epoptes.ui.h:67
 msgid "Remove the selected group"
-msgstr ""
-
-#: ../epoptes/ui/gtk/about.ui.h:1
-msgid "Copyright © 2010+ The Epoptes Team"
-msgstr ""
-
-#: ../epoptes/ui/gtk/about.ui.h:2
-msgid "A computer lab management and monitoring tool."
-msgstr ""
-
-#: ../epoptes/ui/gtk/about.ui.h:3
-msgid "translator-credits"
-msgstr ""
-
-#: ../bin/epoptes.py:34
-msgid "An error occurred while trying to connect to the epoptes service:"
-msgstr ""
-
-#: ../bin/epoptes.py:39
-#, python-format
-msgid "User %s must be a member of group %s to run epoptes."
-msgstr ""
-
-#: ../bin/epoptes.py:43
-msgid "Make sure the epoptes service is running."
-msgstr ""
-
-#: ../bin/epoptes.py:48 ../epoptes/ui/gui.py:891
-msgid "Service connection error"
-msgstr ""
-
-#: ../epoptes/ui/gtk/client_information.ui.h:1
-msgid "Client type:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/client_information.ui.h:2
-msgid "Client alias:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/client_information.ui.h:3
-msgid "Client hostname:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/client_information.ui.h:4
-msgid "MAC address:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/client_information.ui.h:5
-msgid "IP address:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/client_information.ui.h:6
-msgid "User:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/client_information.ui.h:7
-msgid "Processor:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/client_information.ui.h:8
-msgid "RAM:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/client_information.ui.h:9
-msgid "Graphics card:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/client_information.ui.h:10
-msgid "Edit alias"
-msgstr ""
-
-#: ../epoptes/ui/gtk/client_information.ui.h:11
-msgid "Set a new alias for the selected client"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:2
-msgid "Network benchmark"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:3
-msgid "Start"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:4
-msgid ""
-"The network benchmark will test the effective network\n"
-"bandwidth that is available for your lab."
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:6
-msgid "Run the benchmark for"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:7
-msgid "seconds"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:8
-msgid "Network benchmark results"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:10
-msgid "Upload bandwidth"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:11
-msgid "Download bandwidth"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:12
-msgid ""
-"Could not get measurements from some of the clients. The statistics will be "
-"affected."
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:13
-msgid "Overall bandwidth statistics"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:14
-msgid "The average server download bandwidth per client"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:15
-msgid "Average server download:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:16
-msgid "The average server upload bandwidth per client"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:17
-msgid "Average server upload:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:18
-msgid "The total server upload bandwidth, for all clients, simultaneously"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:19
-msgid "Total server upload:"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:20
-msgid "The total server download bandwidth, for all clients, simultaneously"
-msgstr ""
-
-#: ../epoptes/ui/gtk/benchmark.ui.h:21
-msgid "Total server download:"
 msgstr ""
 
 #: ../epoptes/ui/gui.py:113
@@ -610,7 +445,12 @@ msgstr ""
 msgid "Confirm action"
 msgstr ""
 
-#: ../epoptes/common/config.py:190
+#: ../epoptes/ui/gui.py:1298 ../epoptes/ui/gtk/benchmark.ui.h:1
+#: ../epoptes/ui/gtk/send_message.ui.h:7 ../epoptes/ui/benchmark.py:73
+msgid "Warning"
+msgstr ""
+
+#: ../epoptes/common/config.py:234
 msgid "Message from administrator"
 msgstr ""
 
@@ -622,6 +462,102 @@ msgstr ""
 msgid "Could not initialize notifications!"
 msgstr ""
 
+#: ../epoptes/ui/gtk/benchmark.ui.h:2
+msgid "Network benchmark"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:3
+msgid "Start"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:4
+msgid ""
+"The network benchmark will test the effective network\n"
+"bandwidth that is available for your lab."
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:6
+msgid "Run the benchmark for"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:7
+msgid "seconds"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:8
+msgid "Network benchmark results"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:10
+msgid "Upload bandwidth"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:11
+msgid "Download bandwidth"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:12
+msgid ""
+"Could not get measurements from some of the clients. The statistics will be "
+"affected."
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:13
+msgid "Overall bandwidth statistics"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:14
+msgid "The average server download bandwidth per client"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:15
+msgid "Average server download:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:16
+msgid "The average server upload bandwidth per client"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:17
+msgid "Average server upload:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:18
+msgid "The total server upload bandwidth, for all clients, simultaneously"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:19
+msgid "Total server upload:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:20
+msgid "The total server download bandwidth, for all clients, simultaneously"
+msgstr ""
+
+#: ../epoptes/ui/gtk/benchmark.ui.h:21
+msgid "Total server download:"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.py:114
+#, python-format
+msgid "Connecting to %s..."
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.py:119
+#, python-format
+msgid "Connected to %s"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.py:126
+#, python-format
+msgid "Failed to connect to %s"
+msgstr ""
+
+#: ../potfiles-workaround/remote_assistance.py:143
+#, python-format
+msgid "Retrying in %d..."
+msgstr ""
+
 #: ../epoptes/ui/gtk/exec_command.ui.h:2
 msgid "URL, file or command to execute on the selected clients:"
 msgstr ""
@@ -630,6 +566,70 @@ msgstr ""
 #: ../epoptes/ui/client_information.py:66
 #, python-format
 msgid "Properties of %s"
+msgstr ""
+
+#: ../epoptes/ui/gtk/client_information.ui.h:1
+msgid "Client type:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/client_information.ui.h:2
+msgid "Client alias:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/client_information.ui.h:3
+msgid "Client hostname:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/client_information.ui.h:4
+msgid "MAC address:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/client_information.ui.h:5
+msgid "IP address:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/client_information.ui.h:6
+msgid "User:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/client_information.ui.h:7
+msgid "Processor:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/client_information.ui.h:8
+msgid "RAM:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/client_information.ui.h:9
+msgid "Graphics card:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/client_information.ui.h:10
+msgid "Edit alias"
+msgstr ""
+
+#: ../epoptes/ui/gtk/client_information.ui.h:11
+msgid "Set a new alias for the selected client"
+msgstr ""
+
+#: ../epoptes/ui/gtk/send_message.ui.h:2
+msgid "_Send"
+msgstr ""
+
+#: ../epoptes/ui/gtk/send_message.ui.h:3
+msgid "Message title:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/send_message.ui.h:4
+msgid "Message text:"
+msgstr ""
+
+#: ../epoptes/ui/gtk/send_message.ui.h:5
+msgid "Use Pango markup"
+msgstr ""
+
+#: ../epoptes/ui/gtk/send_message.ui.h:8 ../epoptes/ui/benchmark.py:80
+msgid "Error"
 msgstr ""
 
 #: ../epoptes/ui/benchmark.py:96
