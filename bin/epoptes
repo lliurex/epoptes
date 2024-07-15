@@ -7,6 +7,7 @@ Launch the epoptes UI.
 """
 import getpass
 import grp
+import pwd
 import os
 import os.path
 import subprocess
@@ -22,6 +23,8 @@ from gi.repository import Gtk
 from twisted.internet import reactor
 from twisted.internet.protocol import ClientCreator
 
+import xmlrpc.client as n4dclient
+import ssl
 
 LOG = logger.Logger(__file__)
 
@@ -34,10 +37,11 @@ def connection_failed(failure):
     # Permission denied error
     if failure.value.osError == 13:
         msg += _("User %s must be a member of group %s to run epoptes.") % \
-              (getpass.getuser(), config.system['SOCKET_GROUP'])
+        (getpass.getuser(), config.system['SOCKET_GROUP'])
     # No such file error
     elif failure.value.osError == 2:
         msg += _("Make sure the epoptes service is running.")
+    
     dlg = Gtk.MessageDialog(type=Gtk.MessageType.ERROR,
                             buttons=Gtk.ButtonsType.OK)
     dlg.set_markup(msg)
@@ -48,27 +52,43 @@ def connection_failed(failure):
     reactor.stop()
 
 
-def need_sg_relaunch():
+def need_sg_relaunch(is_member=None):
     """After fresh installation, we need to relaunch with `sg`."""
     # If we've already used sg once, don't retry it.
     if os.getenv('EPOPTES_SG'):
         return False
     if not os.path.isfile('/usr/bin/sg'):
-        return False
+        return [False,user_info]
     socket = config.system['DIR'] + '/epoptes.socket'
     if os.access(socket, os.W_OK):
         return False
-    try:
-        epoptes_members = grp.getgrnam(config.system['SOCKET_GROUP']).gr_mem
-    except KeyError:
-        return False
-    if getpass.getuser() not in epoptes_members:
+    if not is_member:
+        try:
+            #old groups method
+            #epoptes_members = grp.getgrnam(config.system['SOCKET_GROUP']).gr_mem
+
+            user=getpass.getuser()
+            gid = pwd.getpwnam(user).pw_gid
+            groups_gids = os.getgrouplist(user, gid)
+            user_groups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
+        except KeyError:
+            return False
+
+        #old groups method
+        #if getpass.getuser() not in epoptes_members:
+
+        if config.system['SOCKET_GROUP'] not in  user_groups:
+            return False
+
+        
+    else:
         return False
     # At this point it makes sense to try relaunching.
     # The backgrounding is to allow sg and sh to terminate.
     LOG.w('Relaunching epoptes using sg to gain group access')
     subprocess.Popen(['/usr/bin/sg', config.system['SOCKET_GROUP'],
                       'EPOPTES_SG=True {} &'.format(' '.join(sys.argv))])
+    
     return True
 
 
@@ -78,20 +98,317 @@ def main():
         if sys.argv[1] in ('--version', '-version'):
             print("Epoptes %s" % epoptes.__version__)
             sys.exit(0)
-
     # cd to the epoptes directory, so that all paths are relative
     if not os.path.isfile('epoptes.ui'):
         os.chdir('/usr/share/epoptes')
+    
+    try:
+        ok=False
+        msg=""
+        user=os.environ["USER"]
+        server_list_file="/usr/share/epoptes/server_ip.list"
+        server_list=[]
+        aulas=[]
+        aula_selected=""
+        ipserver="127.0.1.1"
+        var_epoptes_ip_sever="EPOPTES_IP_SERVER"
 
-    if need_sg_relaunch():
+        #is aula model or not
+        context=ssl._create_unverified_context()
+        c_local=n4dclient.ServerProxy('https://localhost:9779',context=context,allow_none=True)
+        ret=c_local.get_variable("SRV_IP")
+        if ret["return"]==None:
+            is_server=False
+        else:
+            is_server=True
+
+        while not ok:
+            def get_lang():
+                lng=os.environ["LANGUAGE"].split(":")[0]
+                if lng=="es_ES" or lng=="es":
+                    return "es"
+                if 'valencia' in lng or lng=="ca":
+                    return "qcv"
+                return "en"
+            #def get_lang
+            
+            def get_translation(txt):
+                try:
+                    t={}
+                    lang=get_lang()
+                    t["qcv"]={}
+                    t["es"]={}
+                    t["qcv"]["Carro"]="Carro:"
+                    t["es"]["Carro"]="Carro:"
+                    t["qcv"]["User"]="Usuari:"
+                    t["es"]["User"]="Usuario:"
+                    t["qcv"]["Password"]="Contrasenya"
+                    t["es"]["Password"]="Contraseña:"
+                    t["qcv"]["Cod Center"]="Cod Centre:"
+                    t["es"]["Cod Center"]="Cod Centro:"      
+                    
+                    if lang in t:
+                        return t[lang][txt]
+                    else:
+                        return txt
+                except Exception as e:
+                    return txt
+            
+            #def get_tranlations
+
+            
+            dialog = Gtk.Dialog("n4d-epoptes",
+               None,
+               modal=True,)
+            dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
+                Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT)
+                
+            def manual_validate(widget):
+                dialog.hide()
+
+
+            def cod_center_capture():
+                try:
+                    cod_center="46XXXXX"
+                    return cod_center
+                except Exception as e:
+                    return "Error cod_center"
+
+            #def cod_center_capture
+
+
+            def comboboxAulas(aulas):
+                try:
+                    aula_store = Gtk.ListStore(str)
+                    for aula in aulas:
+                        aula_store.append([aula])
+                    return aula_store
+                except Exception as e:
+                    print("Error comboboxAulas")
+                    #register_msg_label.set_markup("<span foreground='red'>"+_("Error comboboxAulas")+"</span>")
+                    return "Error comboboxAulas"
+                    
+            #def comboboxaulas
+
+
+
+            def on_aula_combo_changed(combo):
+                aula=""
+                tree_iter = combo.get_active_iter()
+                if tree_iter is not None:
+                    model = combo.get_model()
+                    aula = model[tree_iter][0]
+                    print("Selected: aula=%s" % aula)
+                return aula
+            #def on_aula_combo_changed
+
+
+            def set_ip(ip_addr):
+                ip_UP  = True if os.system("ping -c 1 " + ip_addr) == 0 else False
+                if not ip_UP:
+                    print("New IP addr added")
+                else:
+                    print("Ip is in use")
+                return ip_UP
+            #def set_ip
+
+
+
+                
+            img=Gtk.Image()
+            img.set_from_file('/usr/share/epoptes/images/n4d-epoptes.svg')
+            img.show()
+            dialogBox=dialog.get_content_area()
+            dialogBox.pack_start(img,False,True,5)
+
+
+
+            cod_center=cod_center_capture()
+
+            
+            hbox1=Gtk.Grid()
+            hbox1.set_row_spacing(5)
+            hbox1.set_column_spacing(5)
+            hbox1.props.margin_left = 10
+            hbox1.props.margin_right = 10
+            user_entry=Gtk.Entry()
+            user_entry.set_text(user)
+            user_label=Gtk.Label(label=get_translation("User"))
+            user_label.set_halign(Gtk.Align.END)
+            user_label.set_valign(Gtk.Align.CENTER)
+            password_entry=Gtk.Entry()
+            password_entry.set_visibility(False)
+            password_entry.connect("activate",manual_validate)
+            password_label=Gtk.Label(label=get_translation("Password"))
+            password_label.set_halign(Gtk.Align.END)
+            password_label.set_valign(Gtk.Align.CENTER)
+            cod_center_entry=Gtk.Entry()
+            cod_center_entry.set_text(cod_center)
+            cod_center_label=Gtk.Label(label=get_translation("Cod Center"))
+            cod_center_label.set_halign(Gtk.Align.END)
+            cod_center_label.set_valign(Gtk.Align.CENTER)
+
+            server_list=[]
+            aulas=[]
+
+            #generate carritos list for combobox
+            if os.path.exists(server_list_file):
+                with open (server_list_file, 'r') as fp:
+                    for line in fp:
+                        #elimino ultimo caracter de salto de pagina
+                        x=line[:-1]
+                        server_list.append(x)
+                print('Server Ip List; %s'%server_list)
+                for count,ele in enumerate(server_list,start=1):
+                    aulas.append ('Carro '  +str(count))
+                print('Carritos List: %s'%aulas)     
+                #login_button.set_sensitive(True)
+            else:
+                #login_button.set_sensitive(False)
+                #login_msg_label.set_text(_("You don't have reserved server Ips..."))
+                pass
+
+            aula_store_dates=comboboxAulas(aulas)
+            aula_combo = Gtk.ComboBox.new_with_model(aula_store_dates)
+            aula_combo.connect("changed", on_aula_combo_changed)
+            renderer_text = Gtk.CellRendererText()
+            aula_combo.pack_start(renderer_text, True)
+            aula_combo.add_attribute(renderer_text, "text", 0)
+            aula_label=Gtk.Label(label=get_translation("Carro"))
+            aula_label.set_halign(Gtk.Align.END)
+            aula_label.set_valign(Gtk.Align.CENTER)
+            
+            hbox1.attach(user_label,0,0,1,1)
+            hbox1.attach(user_entry,1,0,1,1)
+            hbox1.attach(password_label,0,1,1,1)
+            hbox1.attach(password_entry,1,1,1,1)
+            hbox1.attach(cod_center_label,0,2,1,1)
+            hbox1.attach(cod_center_entry,1,2,1,1)
+            hbox1.attach(aula_label,0,3,1,1)
+            hbox1.attach(aula_combo,1,3,1,1)
+
+
+
+            dialogBox.pack_start(hbox1,False,True,5)
+            msg_label=Gtk.Label()
+            msg_label.set_markup(msg)
+            dialogBox.pack_start(msg_label,False,True,5)
+            dialogBox.show_all()
+            #Is a server in model aula, clasic login.
+            #is_server=True
+            if is_server:
+                aula_combo.hide()
+                cod_center_label.hide()
+                cod_center_entry.hide()
+                aula_label.hide()
+            else:
+                cod_center_label.hide()
+                cod_center_entry.hide()
+
+            response=dialog.run()
+            dialog.hide()
+
+            
+            if response==-2 or response==-4:
+                print("Exiting...")
+                sys.exit(1)
+            
+            if response==-3 or response==-1:
+                user_info=(user_entry.get_text(),password_entry.get_text())
+                user=user_entry.get_text()
+                
+                #TESTING IF CARRITO_IP IS IN USED LOCALLY
+                print("Testing if IP is in local use")
+                ret=c_local.get_variable(var_epoptes_ip_sever)
+                print(ret["return"])
+                if ret["return"]==None:
+                    pass
+                else:
+                    ret=c_local.release_ip(user_info,"EpoptesVariables",ret["return"],var_epoptes_ip_sever)
+                    print (ret)
+                
+
+
+                #CONFIGURE EPOPTES SERVICES IF IS A AULA MODEL OR DESKTOP ALONE
+                if is_server:
+                    #is server normal login
+                    ipserver_real="server"
+                    context=ssl._create_unverified_context()
+                    c=n4dclient.ServerProxy('https://server:9779',context=context,allow_none=True)
+                    ret=c.register_ip(user_info,"EpoptesServer","")
+                    if ret.get('status',None)==0: 
+                        ok=True
+                    else:
+                        msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
+                else:
+                    #is a teacher desktop
+                    aula_select=on_aula_combo_changed(aula_combo)
+                    print("Aula selected is: %s"%aula_select)
+                    if aula_select in ["None",""]:
+                        msg="<span foreground='red'>"+"Registered failed, please select one clasroom in list."+"</span>"
+                    else:
+                        print("- Center Code: %s"%cod_center)
+                        print("- Carrito: %s"%aula_select)
+                        for i, elem in enumerate(aulas):
+                            if elem == aula_select:
+                                index=i
+                        for i, elem in enumerate(server_list):
+                            if i == index:
+                                ipserver=elem
+                        print("- IP: %s"%ipserver)
+
+                        print("Is a Desktop alone, testing IP:%s is free...."%ipserver)
+                        msg="<span foreground='blue'>"+"Testing the network, please wait..."+"</span>"
+                        #test para comprobar que nadie tiene la Ip en uso
+                        #ipserver="192.168.1.158"
+                        k=n4dclient.ServerProxy('https://%s:9779'%ipserver,context=context,allow_none=True)
+                        try:
+                            ip_bussy=k.ip_free(user_info,"EpoptesServer",ipserver)
+                        except:
+                            ip_bussy=False
+                        if not ip_bussy:
+                            ipserver_real=ipserver
+                            #Adding new Ip to NetcardActive
+                            ret=c_local.set_ip_server(user_info,"EpoptesServer",ipserver)
+                            eth_used=ret["return"]
+                            ret=c_local.set_variable(user_info,var_epoptes_ip_sever,[ipserver,eth_used])
+                            valor=c_local.get_variable(var_epoptes_ip_sever)
+                            print("New IP_SERVER_VARIABLE added:%s"%valor["return"])
+                            print("Ip is free you have the control in Carrito %s and run...."%aula_select)
+                            ret=k.register_ip(user_info,"EpoptesServer","")
+                            if ret.get('status',None)==0: 
+                                ok=True
+                            else:
+                                msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
+                        else:
+                            msg="<span foreground='red'>"+"Your Carrito is connected now, please select another one."+"</span>"
+                            print("Ip now used... select another one.")                        
+            else:
+                msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
+        groups = [g.gr_name for g in grp.getgrall() if os.environ["USER"] in g.gr_mem]
+        is_member=config.system['SOCKET_GROUP'] in groups
+    except Exception as e:
+        print(str(e))
+        is_member=False
+        sys.exit(1)
+
+    
+    if need_sg_relaunch(is_member):
         sys.exit(0)
-
+    
     egui = gui.EpoptesGui()
+    egui.n4d_user=user_info[0]
+    egui.n4d_password=user_info[1]
     # noinspection PyUnresolvedReferences
+    #print("DFR Connection ipserver_real:%s"%ipserver_real)
     dfr = ClientCreator(reactor, uiconnection.Daemon, egui)\
-        .connectUNIX(config.system['DIR'] + "/epoptes.socket")
+        .connectTCP(ipserver_real,10000)
+
+    #dfr = ClientCreator(reactor, uiconnection.Daemon, egui)\
+    #    .connectUNIX(config.system['DIR'] + "/epoptes.socket")
+    
     dfr.addErrback(connection_failed)
-    # noinspection PyUnresolvedReferences
+    #noinspection PyUnresolvedReferences
     reactor.run()
 
 
