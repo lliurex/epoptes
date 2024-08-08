@@ -176,6 +176,12 @@ def main():
 
             #def cod_center_capture
 
+            def dprint(message):
+                show_dbug=True
+                if show_dbug:
+                    print("[Epoptes] %s"%message)
+            #def dprint
+
 
             def comboboxAulas(aulas):
                 try:
@@ -198,17 +204,17 @@ def main():
                 if tree_iter is not None:
                     model = combo.get_model()
                     aula = model[tree_iter][0]
-                    print("Selected: aula=%s" % aula)
+                    dprint("Selected: aula=%s" % aula)
                 return aula
             #def on_aula_combo_changed
 
 
             def set_ip(ip_addr):
-                ip_UP  = True if os.system("ping -c 1 " + ip_addr) == 0 else False
+                ip_UP  = True if os.system("ping -c 1 -w 6" + ip_addr) == 0 else False
                 if not ip_UP:
-                    print("New IP addr added")
+                    dprint("New IP addr added")
                 else:
-                    print("Ip is in use")
+                    dprint("Ip is in use")
                 return ip_UP
             #def set_ip
 
@@ -258,10 +264,10 @@ def main():
                         #elimino ultimo caracter de salto de pagina
                         x=line[:-1]
                         server_list.append(x)
-                print('Server Ip List; %s'%server_list)
+                dprint('Server Ip List; %s'%server_list)
                 for count,ele in enumerate(server_list,start=1):
                     aulas.append ('Carro '  +str(count))
-                print('Carritos List: %s'%aulas)     
+                dprint('Carritos List: %s'%aulas)     
                 #login_button.set_sensitive(True)
             else:
                 #login_button.set_sensitive(False)
@@ -310,7 +316,7 @@ def main():
 
             
             if response==-2 or response==-4:
-                print("Exiting...")
+                dprint("Exiting...")
                 sys.exit(1)
             
             if response==-3 or response==-1:
@@ -318,9 +324,9 @@ def main():
                 user=user_entry.get_text()
                 
                 #TESTING IF CARRITO_IP IS IN USED LOCALLY
-                print("Testing if IP is in local use")
+                dprint("Testing if IP is in local use")
                 ret=c_local.get_variable(var_epoptes_ip_sever)
-                print(ret["return"])
+                dprint(ret["return"])
                 if ret["return"]==None:
                     pass
                 else:
@@ -343,38 +349,42 @@ def main():
                 else:
                     #is a teacher desktop
                     aula_select=on_aula_combo_changed(aula_combo)
-                    print("Aula selected is: %s"%aula_select)
+                    dprint("Aula selected is: %s"%aula_select)
                     if aula_select in ["None",""]:
                         msg="<span foreground='red'>"+"Registered failed, please select one clasroom in list."+"</span>"
                     else:
-                        print("- Center Code: %s"%cod_center)
-                        print("- Carrito: %s"%aula_select)
+                        dprint("- Center Code: %s"%cod_center)
+                        dprint("- Carrito: %s"%aula_select)
                         for i, elem in enumerate(aulas):
                             if elem == aula_select:
                                 index=i
                         for i, elem in enumerate(server_list):
                             if i == index:
                                 ipserver=elem
-                        print("- IP: %s"%ipserver)
+                        dprint("- IP: %s"%ipserver)
 
-                        print("Is a Desktop alone, testing IP:%s is free...."%ipserver)
+                        dprint("Is a Desktop alone, testing IP:%s is free...."%ipserver)
                         msg="<span foreground='blue'>"+"Testing the network, please wait..."+"</span>"
                         #test para comprobar que nadie tiene la Ip en uso
                         #ipserver="192.168.1.158"
                         k=n4dclient.ServerProxy('https://%s:9779'%ipserver,context=context,allow_none=True)
                         try:
+                            print("N4D ip_free.... testing, wait please.")
+                            old_timeout=socket.getdefaulttimeout()
+                            socket.setdefaulttimeout(5)
                             ip_bussy=k.ip_free(user_info,"EpoptesServer",ipserver)
+                            socket.setdefaulttimeout(old_timeout)
                         except:
                             ip_bussy=False
                         if not ip_bussy:
                             ipserver_real=ipserver
                             #Adding new Ip to NetcardActive
+                            ret=c_local.set_variable(user_info,var_epoptes_ip_sever,[ipserver,eth_used])
                             ret=c_local.set_ip_server(user_info,"EpoptesServer",ipserver)
                             eth_used=ret["return"]
-                            ret=c_local.set_variable(user_info,var_epoptes_ip_sever,[ipserver,eth_used])
                             valor=c_local.get_variable(var_epoptes_ip_sever)
-                            print("New IP_SERVER_VARIABLE added:%s"%valor["return"])
-                            print("Ip is free you have the control in Carrito %s and run...."%aula_select)
+                            dprint("New IP_SERVER_VARIABLE added:%s"%valor["return"])
+                            dprint("Ip is free you have the control in Carrito %s and run...."%aula_select)
                             ret=k.register_ip(user_info,"EpoptesServer","")
                             if ret.get('status',None)==0: 
                                 ok=True
@@ -382,7 +392,7 @@ def main():
                                 msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
                         else:
                             msg="<span foreground='red'>"+"Your Carrito is connected now, please select another one."+"</span>"
-                            print("Ip now used... select another one.")                        
+                            dprint("Ip now used... select another one.")                        
             else:
                 msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
         groups = [g.gr_name for g in grp.getgrall() if os.environ["USER"] in g.gr_mem]
