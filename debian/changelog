@@ -1,3 +1,9 @@
+epoptes (1:20.01-1~ubuntu20.04.3+lliurex6.2) jammy; urgency=medium
+
+  * Adding timeout to N4D ping 
+
+ -- Daniel Duran <daduve@gmail.com>  Thu, 08 Aug 2024 14:24:36 +0200
+
 epoptes (1:20.01-1~ubuntu20.04.3+lliurex6.1) jammy; urgency=medium
 
   * Adding support to ADI clasroom.
