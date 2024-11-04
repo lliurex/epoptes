@@ -36,6 +36,7 @@ Depends: ${python3:Depends}, ${misc:Depends},
  socat,
  x11vnc,
  xterm,
+ natfree-iface,
  xvnc4viewer | tigervnc-viewer | ssvnc | vnc-viewer,
 Recommends: epoptes-client
 Description: Computer lab management tool
