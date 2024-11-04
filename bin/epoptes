@@ -25,6 +25,7 @@ from twisted.internet.protocol import ClientCreator
 
 import xmlrpc.client as n4dclient
 import ssl
+import asyncio
 
 LOG = logger.Logger(__file__)
 
@@ -176,12 +177,6 @@ def main():
 
             #def cod_center_capture
 
-            def dprint(message):
-                show_dbug=True
-                if show_dbug:
-                    print("[Epoptes] %s"%message)
-            #def dprint
-
 
             def comboboxAulas(aulas):
                 try:
@@ -204,17 +199,17 @@ def main():
                 if tree_iter is not None:
                     model = combo.get_model()
                     aula = model[tree_iter][0]
-                    dprint("Selected: aula=%s" % aula)
+                    print("Selected: aula=%s" % aula)
                 return aula
             #def on_aula_combo_changed
 
 
             def set_ip(ip_addr):
-                ip_UP  = True if os.system("ping -c 1 -w 6" + ip_addr) == 0 else False
+                ip_UP  = True if os.system("ping -c 1" + ip_addr) == 0 else False
                 if not ip_UP:
-                    dprint("New IP addr added")
+                    print("New IP addr added")
                 else:
-                    dprint("Ip is in use")
+                    print("Ip is in use")
                 return ip_UP
             #def set_ip
 
@@ -264,10 +259,10 @@ def main():
                         #elimino ultimo caracter de salto de pagina
                         x=line[:-1]
                         server_list.append(x)
-                dprint('Server Ip List; %s'%server_list)
+                print('Server Ip List: %s'%server_list)
                 for count,ele in enumerate(server_list,start=1):
                     aulas.append ('Carro '  +str(count))
-                dprint('Carritos List: %s'%aulas)     
+                print('Carritos List: %s'%aulas)     
                 #login_button.set_sensitive(True)
             else:
                 #login_button.set_sensitive(False)
@@ -316,7 +311,7 @@ def main():
 
             
             if response==-2 or response==-4:
-                dprint("Exiting...")
+                print("Exiting...")
                 sys.exit(1)
             
             if response==-3 or response==-1:
@@ -324,20 +319,20 @@ def main():
                 user=user_entry.get_text()
                 
                 #TESTING IF CARRITO_IP IS IN USED LOCALLY
-                dprint("Testing if IP is in local use")
+                print("Testing if IP is in local use")
                 ret=c_local.get_variable(var_epoptes_ip_sever)
-                dprint(ret["return"])
+                print(ret["return"])
                 if ret["return"]==None:
                     pass
                 else:
                     ret=c_local.release_ip(user_info,"EpoptesVariables",ret["return"],var_epoptes_ip_sever)
-                    print (ret)
+                    print ("Deletingobsolete IP:%s"%ret)
                 
 
 
                 #CONFIGURE EPOPTES SERVICES IF IS A AULA MODEL OR DESKTOP ALONE
                 if is_server:
-                    #is server normal login
+                    #AULA MODEL - SERVER IS CONFIGURED LIKE A DHCP
                     ipserver_real="server"
                     context=ssl._create_unverified_context()
                     c=n4dclient.ServerProxy('https://server:9779',context=context,allow_none=True)
@@ -347,52 +342,60 @@ def main():
                     else:
                         msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
                 else:
-                    #is a teacher desktop
+                    #DESKTOP TEACHER - NEW CONFIGUTARION 2024
                     aula_select=on_aula_combo_changed(aula_combo)
-                    dprint("Aula selected is: %s"%aula_select)
+                    print("Aula selected is: %s"%aula_select)
                     if aula_select in ["None",""]:
                         msg="<span foreground='red'>"+"Registered failed, please select one clasroom in list."+"</span>"
                     else:
-                        dprint("- Center Code: %s"%cod_center)
-                        dprint("- Carrito: %s"%aula_select)
+                        print("- Center Code: %s"%cod_center)
+                        print("- Carrito: %s"%aula_select)
                         for i, elem in enumerate(aulas):
                             if elem == aula_select:
                                 index=i
                         for i, elem in enumerate(server_list):
                             if i == index:
                                 ipserver=elem
-                        dprint("- IP: %s"%ipserver)
+                        print("- IP: %s"%ipserver)
 
-                        dprint("Is a Desktop alone, testing IP:%s is free...."%ipserver)
+                        print("Is a Desktop alone, testing IP:%s is free...."%ipserver)
                         msg="<span foreground='blue'>"+"Testing the network, please wait..."+"</span>"
                         #test para comprobar que nadie tiene la Ip en uso
                         #ipserver="192.168.1.158"
                         k=n4dclient.ServerProxy('https://%s:9779'%ipserver,context=context,allow_none=True)
+                        ip_bussy=True
                         try:
-                            print("N4D ip_free.... testing, wait please.")
                             old_timeout=socket.getdefaulttimeout()
                             socket.setdefaulttimeout(5)
                             ip_bussy=k.ip_free(user_info,"EpoptesServer",ipserver)
                             socket.setdefaulttimeout(old_timeout)
                         except:
                             ip_bussy=False
+                        print("IP is busy: %s"%ip_bussy)
                         if not ip_bussy:
-                            ipserver_real=ipserver
-                            #Adding new Ip to NetcardActive
-                            ret=c_local.set_variable(user_info,var_epoptes_ip_sever,[ipserver,eth_used])
+                            ipserver_real=ipserver.split('/')[0]
+                            #GENERATE VIRTUAL ETH, ADDING IP/MASK
                             ret=c_local.set_ip_server(user_info,"EpoptesServer",ipserver)
-                            eth_used=ret["return"]
+                            #eth_used=ret["return"]
+                            if ret:
+                                print('Ip Virtual has been added %s'%ipserver)
+                            else:
+                                print('Fail addding virtual IP')
+                            ret=c_local.set_variable(user_info,var_epoptes_ip_sever,[ipserver])
                             valor=c_local.get_variable(var_epoptes_ip_sever)
-                            dprint("New IP_SERVER_VARIABLE added:%s"%valor["return"])
-                            dprint("Ip is free you have the control in Carrito %s and run...."%aula_select)
+                            print("New IP_SERVER_VARIABLE added:%s"%valor["return"])
+                            print("Ip is free you have the control in %s and run...."%aula_select)
+                            ok=True
+                            '''
                             ret=k.register_ip(user_info,"EpoptesServer","")
                             if ret.get('status',None)==0: 
                                 ok=True
                             else:
                                 msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
+                            '''
                         else:
                             msg="<span foreground='red'>"+"Your Carrito is connected now, please select another one."+"</span>"
-                            dprint("Ip now used... select another one.")                        
+                            print("Ip now used... select another one.")                        
             else:
                 msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
         groups = [g.gr_name for g in grp.getgrall() if os.environ["USER"] in g.gr_mem]
@@ -410,7 +413,7 @@ def main():
     egui.n4d_user=user_info[0]
     egui.n4d_password=user_info[1]
     # noinspection PyUnresolvedReferences
-    #print("DFR Connection ipserver_real:%s"%ipserver_real)
+    print("DFR Connection ipserver_real:%s"%ipserver_real)
     dfr = ClientCreator(reactor, uiconnection.Daemon, egui)\
         .connectTCP(ipserver_real,10000)
 
