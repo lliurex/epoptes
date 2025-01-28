@@ -107,7 +107,7 @@ def main():
         ok=False
         msg=""
         user=os.environ["USER"]
-        server_list_file="/usr/share/epoptes/server_ip.list"
+        carritos_max=5
         server_list=[]
         aulas=[]
         aula_selected=""
@@ -251,23 +251,17 @@ def main():
 
             server_list=[]
             aulas=[]
+            epoptes_servers=c_local.get_variable("EPOPTES_SERVERS")
+            server_list=epoptes_servers["return"]
+            print("EPOPTES_SERVERS: %s"%(server_list))
+            if server_list==None:
+                print("Network Variable is empty, please call to SAI.")
+                sys.exit(1)
 
             #generate carritos list for combobox
-            if os.path.exists(server_list_file):
-                with open (server_list_file, 'r') as fp:
-                    for line in fp:
-                        #elimino ultimo caracter de salto de pagina
-                        x=line[:-1]
-                        server_list.append(x)
-                print('Server Ip List: %s'%server_list)
-                for count,ele in enumerate(server_list,start=1):
-                    aulas.append ('Carro '  +str(count))
-                print('Carritos List: %s'%aulas)     
-                #login_button.set_sensitive(True)
-            else:
-                #login_button.set_sensitive(False)
-                #login_msg_label.set_text(_("You don't have reserved server Ips..."))
-                pass
+            for count,ele in enumerate(server_list,start=1):
+                aulas.append ('Carro '  +str(count))
+            print('Carritos List: %s'%aulas)
 
             aula_store_dates=comboboxAulas(aulas)
             aula_combo = Gtk.ComboBox.new_with_model(aula_store_dates)
@@ -321,7 +315,7 @@ def main():
                 #TESTING IF CARRITO_IP IS IN USED LOCALLY
                 print("Testing if IP is in local use")
                 ret=c_local.get_variable(var_epoptes_ip_sever)
-                print(ret["return"])
+                print("Ip_Server_in_use: %s"%(ret["return"]))
                 if ret["return"]==None:
                     pass
                 else:

@@ -206,11 +206,9 @@ class EpoptesGui(object):
             if not self.global_groups:
                 #config.save_groups(self.groups_file, self.gstore)
                 config.save_groups(os.path.expanduser('~/.config/epoptes/groups.json'), self.gstore,(self.n4d_user,self.n4d_password))
-
             settings = config.settings
             if not settings.has_section('GUI'):
                 settings.add_section('GUI')
-            
             settings.set('GUI', 'selected_group', str(sel_group))
             settings.set('GUI', 'show_real_names', str(self.show_real_names))
             settings.set('GUI', 'thumbshots_width', str(self.ts_width))
