@@ -259,6 +259,7 @@ def main():
                 sys.exit(1)
 
             #generate carritos list for combobox
+            aulas.append ('Aula')
             for count,ele in enumerate(server_list,start=1):
                 aulas.append ('Carro '  +str(count))
             print('Carritos List: %s'%aulas)
@@ -323,21 +324,27 @@ def main():
                     print ("Deletingobsolete IP:%s"%ret)
                 
 
+                try:
+                    aula_select=on_aula_combo_changed(aula_combo)
+                except Exception as e:
+                    aula_select=''
 
                 #CONFIGURE EPOPTES SERVICES IF IS A AULA MODEL OR DESKTOP ALONE
-                if is_server:
+                if (is_server or aula_select=="Aula"):
+                    print('Model aula selected, server.')
                     #AULA MODEL - SERVER IS CONFIGURED LIKE A DHCP
                     ipserver_real="server"
-                    context=ssl._create_unverified_context()
+                    #register server in IPTABLES
+                    '''context=ssl._create_unverified_context()
                     c=n4dclient.ServerProxy('https://server:9779',context=context,allow_none=True)
                     ret=c.register_ip(user_info,"EpoptesServer","")
                     if ret.get('status',None)==0: 
                         ok=True
                     else:
-                        msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
+                        msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"'''
+                    ok=True
                 else:
                     #DESKTOP TEACHER - NEW CONFIGUTARION 2024
-                    aula_select=on_aula_combo_changed(aula_combo)
                     print("Aula selected is: %s"%aula_select)
                     if aula_select in ["None",""]:
                         msg="<span foreground='red'>"+"Registered failed, please select one clasroom in list."+"</span>"
