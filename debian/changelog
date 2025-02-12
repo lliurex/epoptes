@@ -1,4 +1,4 @@
-epoptes (1:20.01-1~ubuntu20.04.3+lliurex6.2) jammy; urgency=medium
+epoptes (1:20.01-1~ubuntu20.04.3+lliurex6.2) jammy-testing; urgency=medium
 
   * Adding timeout to N4D ping 
 
