@@ -27,6 +27,8 @@ import xmlrpc.client as n4dclient
 import ssl
 import asyncio
 
+from time import sleep
+
 LOG = logger.Logger(__file__)
 
 
@@ -249,24 +251,20 @@ def main():
             cod_center_label.set_halign(Gtk.Align.END)
             cod_center_label.set_valign(Gtk.Align.CENTER)
 
-            server_list=[]
+            carros=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]
             aulas=[]
-            epoptes_servers=c_local.get_variable("EPOPTES_SERVERS")
-            server_list=epoptes_servers["return"]
-            print("EPOPTES_SERVERS: %s"%(server_list))
-            if server_list==None:
-                print("Network Variable is empty, please call to SAI.")
-                sys.exit(1)
 
             #generate carritos list for combobox
             aulas.append ('Aula')
-            for count,ele in enumerate(server_list,start=1):
+            for count,ele in enumerate(carros,start=1):
                 aulas.append ('Carro '  +str(count))
             print('Carritos List: %s'%aulas)
 
             aula_store_dates=comboboxAulas(aulas)
             aula_combo = Gtk.ComboBox.new_with_model(aula_store_dates)
             aula_combo.connect("changed", on_aula_combo_changed)
+            # set fisrt element in combobox
+            aula_combo.set_active(0)
             renderer_text = Gtk.CellRendererText()
             aula_combo.pack_start(renderer_text, True)
             aula_combo.add_attribute(renderer_text, "text", 0)
@@ -304,36 +302,24 @@ def main():
             response=dialog.run()
             dialog.hide()
 
-            
             if response==-2 or response==-4:
                 print("Exiting...")
                 sys.exit(1)
             
             if response==-3 or response==-1:
                 user_info=(user_entry.get_text(),password_entry.get_text())
-                user=user_entry.get_text()
-                
-                #TESTING IF CARRITO_IP IS IN USED LOCALLY
-                print("Testing if IP is in local use")
-                ret=c_local.get_variable(var_epoptes_ip_sever)
-                print("Ip_Server_in_use: %s"%(ret["return"]))
-                if ret["return"]==None:
-                    pass
-                else:
-                    ret=c_local.release_ip(user_info,"EpoptesVariables",ret["return"],var_epoptes_ip_sever)
-                    print ("Deletingobsolete IP:%s"%ret)
-                
+                user=user_entry.get_text()                
 
                 try:
                     aula_select=on_aula_combo_changed(aula_combo)
                 except Exception as e:
                     aula_select=''
 
+                ipserver_real="server"
                 #CONFIGURE EPOPTES SERVICES IF IS A AULA MODEL OR DESKTOP ALONE
-                if (is_server or aula_select=="Aula"):
+                if (is_server):
                     print('Model aula selected, server.')
                     #AULA MODEL - SERVER IS CONFIGURED LIKE A DHCP
-                    ipserver_real="server"
                     #register server in IPTABLES
                     '''context=ssl._create_unverified_context()
                     c=n4dclient.ServerProxy('https://server:9779',context=context,allow_none=True)
@@ -350,30 +336,18 @@ def main():
                         msg="<span foreground='red'>"+"Registered failed, please select one clasroom in list."+"</span>"
                     else:
                         print("- Center Code: %s"%cod_center)
-                        print("- Carrito: %s"%aula_select)
+                        print("- Mode Selected: %s"%aula_select)
                         for i, elem in enumerate(aulas):
                             if elem == aula_select:
                                 index=i
-                        for i, elem in enumerate(server_list):
-                            if i == index:
-                                ipserver=elem
-                        print("- IP: %s"%ipserver)
+                        print("- Natfree-Server: %s"%index)
 
-                        print("Is a Desktop alone, testing IP:%s is free...."%ipserver)
-                        msg="<span foreground='blue'>"+"Testing the network, please wait..."+"</span>"
-                        #test para comprobar que nadie tiene la Ip en uso
-                        #ipserver="192.168.1.158"
-                        k=n4dclient.ServerProxy('https://%s:9779'%ipserver,context=context,allow_none=True)
-                        ip_bussy=True
-                        try:
-                            old_timeout=socket.getdefaulttimeout()
-                            socket.setdefaulttimeout(5)
-                            ip_bussy=k.ip_free(user_info,"EpoptesServer",ipserver)
-                            socket.setdefaulttimeout(old_timeout)
-                        except:
-                            ip_bussy=False
-                        print("IP is busy: %s"%ip_bussy)
-                        if not ip_bussy:
+                        #natfree-server for index
+                        ret=c_local.set_ip_server(user_info,"EpoptesServer",index)
+                        sleep(1)
+
+
+                        '''if not ip_bussy:
                             ipserver_real=ipserver.split('/')[0]
                             #GENERATE VIRTUAL ETH, ADDING IP/MASK
                             ret=c_local.set_ip_server(user_info,"EpoptesServer",ipserver)
@@ -388,15 +362,15 @@ def main():
                             print("Ip is free you have the control in %s and run...."%aula_select)
                             ok=True
                             '''
-                            ret=k.register_ip(user_info,"EpoptesServer","")
-                            if ret.get('status',None)==0: 
-                                ok=True
-                            else:
-                                msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
+                            #ret=k.register_ip(user_info,"EpoptesServer","")
+                        if ret.get('status',None)==0: 
+                            ok=True
+                        else:
+                            msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
                             '''
                         else:
                             msg="<span foreground='red'>"+"Your Carrito is connected now, please select another one."+"</span>"
-                            print("Ip now used... select another one.")                        
+                            print("Ip now used... select another one.") '''                       
             else:
                 msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
         groups = [g.gr_name for g in grp.getgrall() if os.environ["USER"] in g.gr_mem]
