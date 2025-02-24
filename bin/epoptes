@@ -117,13 +117,14 @@ def main():
         var_epoptes_ip_sever="EPOPTES_IP_SERVER"
 
         #is aula model or not
+        is_server=False
         context=ssl._create_unverified_context()
         c_local=n4dclient.ServerProxy('https://localhost:9779',context=context,allow_none=True)
-        ret=c_local.get_variable("SRV_IP")
-        if ret["return"]==None:
-            is_server=False
-        else:
+        ret=c_local.lliurex_version("","LliurexVersion")
+        if "server" in ret["return"]:
             is_server=True
+        else:
+            is_server=False
 
         while not ok:
             def get_lang():
