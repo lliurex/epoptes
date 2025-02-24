@@ -1,3 +1,9 @@
+epoptes (1:20.01-1~ubuntu20.04.3+lliurex6.3) jammy-testing; urgency=medium
+
+  * Changing is_server test 
+
+ -- Daniel Duran <daduve@gmail.com>  Mon, 24 Feb 2025 17:33:50 +0100
+
 epoptes (1:20.01-1~ubuntu20.04.3+lliurex6.2) jammy-testing; urgency=medium
 
   * Adding timeout to N4D ping 
