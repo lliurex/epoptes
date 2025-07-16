@@ -1,0 +1,27 @@
+From: cless <hectorgh@gmail.com>
+Date: Wed, 16 Jul 2025 10:02:54 +0200
+Subject: check if its a natfree classroom or not to use a different
+ block_internet call
+
+---
+ epoptes/ui/gui.py | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/epoptes/ui/gui.py b/epoptes/ui/gui.py
+index 9184afd..dc35f14 100644
+--- a/epoptes/ui/gui.py
++++ b/epoptes/ui/gui.py
+@@ -479,7 +479,12 @@ class EpoptesGui(object):
+         			import ssl
+         			context=ssl._create_unverified_context()
+         			c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
+-        			c.block((self.n4d_user,self.n4d_password),"IptablesManager","",ip)
++        			#natfree or not
++        			if os.path.exists("/usr/bin/nfctl"):
++        				user=client[C_INSTANCE].users[key]["uname"]
++        				c.block((self.n4d_user,self.n4d_password),"IptablesManager",user)
++        			else:
++        				c.block((self.n4d_user,self.n4d_password),"IptablesManager","",ip)
+         		except Exception as e:
+         			print(str(e))
+ 
