@@ -1,0 +1,38 @@
+From: cless <hectorgh@gmail.com>
+Date: Fri, 18 Jul 2025 13:49:03 +0200
+Subject: fixed small errors
+
+---
+ epoptes/ui/gui.py | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/epoptes/ui/gui.py b/epoptes/ui/gui.py
+index dc35f14..6adc65a 100644
+--- a/epoptes/ui/gui.py
++++ b/epoptes/ui/gui.py
+@@ -481,6 +481,8 @@ class EpoptesGui(object):
+         			c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
+         			#natfree or not
+         			if os.path.exists("/usr/bin/nfctl"):
++        				key=list(client[C_INSTANCE].users)[0]
++        				c=n4dclient.ServerProxy("https://%s:9779"%ip,context=context,allow_none=True)
+         				user=client[C_INSTANCE].users[key]["uname"]
+         				c.block((self.n4d_user,self.n4d_password),"IptablesManager",user)
+         			else:
+@@ -513,8 +515,14 @@ class EpoptesGui(object):
+                 	import xmlrpc.client as n4dclient
+                 	import ssl
+                 	context=ssl._create_unverified_context()
+-                	c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
+-                	c.unblock((self.n4d_user,self.n4d_password),"IptablesManager","",ip)
++                	if os.path.exists("/usr/bin/nfctl"):
++                		key=list(client[C_INSTANCE].users)[0]
++                		c=n4dclient.ServerProxy("https://%s:9779"%ip,context=context,allow_none=True)
++                		user=client[C_INSTANCE].users[key]["uname"]
++                		print(c.unblock((self.n4d_user,self.n4d_password),"IptablesManager",user))
++                	else:
++                		c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
++                		c.unblock((self.n4d_user,self.n4d_password),"IptablesManager","",ip)
+                 except Exception as e:
+                     print(str(e))
+ 
