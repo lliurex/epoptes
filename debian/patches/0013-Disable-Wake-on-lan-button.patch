@@ -1,0 +1,29 @@
+From: daduve <daduve@gmail.com>
+Date: Fri, 24 Apr 2026 10:01:57 +0200
+Subject: Disable Wake on lan button
+
+---
+ epoptes/ui/gtk/epoptes.ui | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/epoptes/ui/gtk/epoptes.ui b/epoptes/ui/gtk/epoptes.ui
+index dfbd3a5..3189a16 100644
+--- a/epoptes/ui/gtk/epoptes.ui
++++ b/epoptes/ui/gtk/epoptes.ui
+@@ -206,6 +206,7 @@
+   </object>
+   <object class="GtkImage" id="img_tlb_session_boot">
+     <property name="visible">True</property>
++    <property name="sensitive">False</property>
+     <property name="can_focus">False</property>
+     <property name="pixbuf">images/poweron.svg</property>
+   </object>
+@@ -845,7 +846,7 @@
+               <object class="GtkToolButton" id="tlb_session_boot">
+                 <property name="visible">True</property>
+                 <property name="can_focus">False</property>
+-                <property name="tooltip_text" translatable="yes">Boot selected clients (Wake On LAN)</property>
++                <property name="tooltip_text" translatable="yes">Deprecated (Wake On LAN)</property>
+                 <property name="label" translatable="yes">Boot</property>
+                 <property name="use_underline">True</property>
+                 <property name="icon_widget">img_tlb_session_boot</property>
