@@ -1,12 +1,10 @@
+#!/usr/bin/python3
 # This file is part of Epoptes, https://epoptes.org
-# Copyright 2016-2018 the Epoptes team, see AUTHORS.
+# Copyright 2016-2023 the Epoptes team, see AUTHORS.
 # SPDX-License-Identifier: GPL-3.0-or-later
 """
 Network benchmark.
 """
-# TODO: either switch to iperf3, or reimplement it with python/twisted.
-# iperf2 doesn't work behind NAT and has several issues, for example:
-# https://sourceforge.net/p/iperf2/discussion/general/thread/db0fed22/
 from epoptes.common.constants import C_INSTANCE
 from epoptes.core import spawn_process
 from epoptes.ui.common import gettext as _, locate_resource
@@ -26,6 +24,7 @@ def humanize(value, decimal=1, unit=''):
 
 class Benchmark:
     """Network benchmark."""
+
     def __init__(self, parent, execute):
         self.clients = {}
         self.countdown_event = None
@@ -129,12 +128,12 @@ class Benchmark:
         """Handle btn_start.clicked event."""
         seconds = int(self.adj_seconds.get_value())
         self.spawn_process.spawn('iperf -s -xS -yC'.split(),
-                                 timeout=(seconds + 3),
+                                 timeout=(seconds + 5),
                                  lines_max=2*len(self.clients))
         for client in self.clients:
             handle = self.clients[client][0]
             # Half time for upload speed and half for download
-            self.execute(handle, 'start_benchmark %d' % int(seconds/2))
+            self.execute(handle, 'start_benchmark "${GUI_IP}" %d' % seconds)
         self.timeleft = seconds
         self.box_seconds.set_visible(False)
         self.box_countdown.set_visible(True)
@@ -153,36 +152,37 @@ class Benchmark:
         else:
             self.lbl_countdown.set_text(
                 _("Some clients didn't respond in time!") + "\n"
-                + _("Waiting for %d more seconds...") % (self.timeleft + 3))
+                + _("Waiting for %d more seconds...") % (self.timeleft + 5))
 
         # Always recall; the timeout will be cancelled in on_iperf_exit.
         return True
 
     def parse_iperf_output(self, out_data):
-        """Parse 'output' as a string of single or multiple lines of CSV in the
-        form of [timestamp, server_ip, port, client_ip, port, id, from-to
-        transfered(Bytes), bandwidth(bps)] and populate a dict of client_ip:
-         [upload Mbps, download Mbps] pairs storing it in self.results.
+        """Parse iperf CSV output and return a dict in the following form:
+        result[client_ip] = [upload bps, download bps]
         """
-        self.results = {}
+        result = {}
         data = out_data.strip().split()
         for line in data:
             values = line.split(',')
             if len(values) != 9:
                 continue
-            client_ip = values[3]
-            client_port = values[4]  # will be 5001 if the client is receiving
-            bandwidth = int(values[8])
+            _timestamp, src_ip, sport, dst_ip, _dport, _id, _interval, _tbytes, bbps = values
+            bbps = int(bbps)
+            if sport == '5001':
+                client_ip = dst_ip
+            else:
+                client_ip = src_ip
             if client_ip in self.clients:
-                if client_ip not in self.results:
-                    self.results[client_ip] = [0, 0]
-
-                if client_port == "5001":
-                    # Download (bits/s)
-                    self.results[client_ip][1] = int(bandwidth)
+                if client_ip not in result:
+                    result[client_ip] = [0, 0]
+                if sport == "5001":
+                    # upload bps (client to server)
+                    result[client_ip][0] = bbps
                 else:
-                    # Upload (bits/s)
-                    self.results[client_ip][0] = int(bandwidth)
+                    # download bps (server to client)
+                    result[client_ip][1] = bbps
+        return result
 
     @staticmethod
     def data_func(_column, cell, model, itr, index):
@@ -208,7 +208,7 @@ class Benchmark:
             return
 
         self.dlg_benchmark.hide()
-        self.parse_iperf_output(out_data.decode("utf-8"))
+        self.results = self.parse_iperf_output(out_data.decode("utf-8"))
         if not self.results:
             msg = _("Did not get measurements from any of the clients."
                     " Check your network settings.")

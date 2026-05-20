@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 # This file is part of Epoptes, https://epoptes.org
-# Copyright 2010-2018 the Epoptes team, see AUTHORS.
+# Copyright 2010-2023 the Epoptes team, see AUTHORS.
 # SPDX-License-Identifier: GPL-3.0-or-later
 """
 Communicate with epoptes-clients on SSL 789
 and with GUIs on /run/epoptes/epoptes.socket.
-Communcation flow:
+Communication flow:
   epoptesd.py imports bashplex.py <=SSL=> epoptes-client.
   epoptesd.py imports guiplex.py <=UNIX=> uiconnection imported by gui.py.
 So, epoptesd, guiplex, bashplex and exchange run as root.
@@ -82,7 +82,7 @@ class ServiceMaker(object):
         gid = grp.getgrnam(config.system['SOCKET_GROUP'])[2]
 
         if not os.path.isdir(config.system['DIR']):
-            # TODO: for some reason this does 0750 instead
+            # `man 2 mkdir` cannot set the sticky bit, a chmod is needed
             os.makedirs(config.system['DIR'], 0o2770)
         os.chmod(config.system['DIR'], 0o2770)
         os.chown(config.system['DIR'], -1, gid)

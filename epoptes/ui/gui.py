@@ -1,13 +1,11 @@
 #!/usr/bin/python3
 # This file is part of Epoptes, https://epoptes.org
-# Copyright 2010-2018 the Epoptes team, see AUTHORS.
+# Copyright 2010-2023 the Epoptes team, see AUTHORS.
 # SPDX-License-Identifier: GPL-3.0-or-later
 """
 Epoptes GUI class.
 """
 from distutils.version import LooseVersion
-import getpass
-import locale
 import os
 import pipes
 import random
@@ -34,8 +32,10 @@ LOG = logger.Logger(__file__)
 
 class EpoptesGui(object):
     """Epoptes GUI class."""
+
     def __init__(self):
         # Initialization of general-purpose variables
+        self.ssh = None
         self.about = None
         self.benchmark = None
         self.client_information = None
@@ -44,7 +44,7 @@ class EpoptesGui(object):
              r"""ip -oneline -family inet link show | """
              r"""sed -n 's/.*ether[[:space:]]*\([[:xdigit:]:]*\).*/\1/p';"""
              r"""echo $LTSP_CLIENT_MAC"""],
-            stdout=subprocess.PIPE).communicate()[0].decode().split()
+            stdout=subprocess.PIPE).communicate()[0].decode().lower().split()
         self.current_thumbshots = dict()
         self.daemon = None
         self.displayed_compatibility_warning = False
@@ -68,6 +68,12 @@ class EpoptesGui(object):
             'GUI', 'thumbshots_width', fallback=128)
         self.ts_height = int(self.ts_width/(4/3))
         self.uid = os.getuid()
+        # A comma separated list of Linux groups that this user may control
+        self.controls_groups = os.getenv('CONTROLS_GROUPS')
+        if self.controls_groups:
+            self.controls_groups = self.controls_groups.split(',')
+        else:
+            self.controls_groups = []
         self.vncserver = None
         self.vncserver_port = None
         self.vncserver_pwd = None
@@ -113,23 +119,29 @@ class EpoptesGui(object):
             self.default_group_ref.get_path())
         self.get('adj_icon_size').set_value(self.ts_width)
         self.on_scl_icon_size_value_changed(None)
-        # Support a global groups.json, writable only by the "administrator"
-        self.groups_file = '/etc/epoptes/groups.json'
-        if os.access(self.groups_file, os.R_OK):
-            # Don't use global groups for the "administrator"
-            self.global_groups = not os.access(self.groups_file, os.W_OK)
+        # If ltsp.conf contains EPOPTES_GROUPS, prefer it
+        self.groups_file = '/etc/ltsp/ltsp.conf'
+        _saved_clients, groups = config.read_groups_ltsp(self.groups_file)
+        if groups:
+            self.global_groups = True
         else:
-            self.groups_file = config.expand_filename('groups.json')
-            self.global_groups = False
-        try:
-            _saved_clients, groups = config.read_groups(self.groups_file)
-        except ValueError as exc:
-            self.warning_dialog(
-                _('Failed to read the groups file:') + '\n'
-                + self.groups_file + '\n'
-                + _('You may need to restore your groups from a backup!')
-                + '\n\n' + str(exc))
-            _saved_clients, groups = [], []
+            # Support a global groups.json, writable only by the "administrator"
+            self.groups_file = '/etc/epoptes/groups.json'
+            if os.access(self.groups_file, os.R_OK):
+                # Don't use global groups for the "administrator"
+                self.global_groups = not os.access(self.groups_file, os.W_OK)
+            else:
+                self.groups_file = config.expand_filename('groups.json')
+                self.global_groups = False
+            try:
+                _saved_clients, groups = config.read_groups_json(self.groups_file)
+            except ValueError as exc:
+                self.warning_dialog(
+                    _('Failed to read the groups file:') + '\n'
+                    + self.groups_file + '\n'
+                    + _('You may need to restore your groups from a backup!')
+                    + '\n\n' + str(exc))
+                _saved_clients, groups = [], []
         # In global groups mode, groups that start with X- are hidden
         self.x_groups = {}
         if self.global_groups:
@@ -161,6 +173,8 @@ class EpoptesGui(object):
         mitem.set_active(True)
         self.get('cmi_show_real_names').set_active(self.show_real_names)
         self.mainwin.set_sensitive(False)
+        # Also called on SIGTERM, e.g. on user logout
+        reactor.on_stop = self.save_settings
 
     def save_settings(self):
         """Helper function for on_imi_file_quit_activate."""
@@ -180,7 +194,6 @@ class EpoptesGui(object):
 
     def on_imi_file_quit_activate(self, _widget):
         """Handle imi_file_quit.activate and wnd_main.destroy events."""
-        self.save_settings()
         if self.vncserver is not None:
             self.vncserver.kill()
         if self.vncviewer is not None:
@@ -248,43 +261,64 @@ class EpoptesGui(object):
             ["shutdown"],
             warn=_('Are you sure you want to shutdown all the computers?'))
 
+    def daemon_command(self, handle, command):
+        """Wrapper for daemon.command() that substitutes ${GUI_IP}."""
+        if '${GUI_IP}' in command:
+            if self.ssh:
+                command = command.replace('${GUI_IP}', self.ssh.gui_ip)
+            else:
+                command = command.replace('${GUI_IP}', '${SERVER}')
+        LOG.d('Running: ' + command)
+        return self.daemon.command(handle, command)
+
     @staticmethod
-    def find_unused_port():
-        """Find an unused port."""
-        sck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sck.bind(('', 0))
-        sck.listen(1)
-        port = sck.getsockname()[1]
-        sck.close()
-        return port
+    def find_unused_port(start, step=1):
+        """Find an unused port; sequentially, for firewall compatibility"""
+        port = start
+        while port > 0 and port < 65535:
+            sck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                sck.bind(('', port))
+                sck.close()
+                return port
+            except:
+                port += step
+        raise RuntimeError('Cannot find_unused_port(%d, %d)' % (start, step))
 
     def reverse_connection(self, cmd, *args):
         """Helper function for on_imi_broadcasts_*_activate."""
         # Open vncviewer in listen mode
         if self.vncviewer is None or self.vncviewer.poll() is not None:
-            self.vncviewer_port = self.find_unused_port()
-            # If the user installed ssvnc, prefer it over xvnc4viewer
-            if os.path.isfile('/usr/bin/ssvncviewer'):
-                self.vncviewer = subprocess.Popen(
-                    ['ssvncviewer', '-multilisten',
-                     str(self.vncviewer_port-5500)])
-            elif os.path.isfile('/usr/bin/xtigervncviewer'):
-                self.vncviewer = subprocess.Popen(
-                    ['xtigervncviewer', '-listen', str(self.vncviewer_port)])
-            elif os.path.isfile('/usr/bin/xvnc4viewer'):
-                self.vncviewer = subprocess.Popen(
-                    ['xvnc4viewer', '-listen', str(self.vncviewer_port)])
-            # Support tigervnc on rpm distributions (LP: #1501747)
-            elif os.path.isfile('/usr/share/locale/de/LC_MESSAGES/tigervnc.mo'):
-                self.vncviewer = subprocess.Popen(
-                    ['vncviewer', '-listen', str(self.vncviewer_port)])
-            # The rest of the viewers, like tightvnc
+            self.vncviewer_port = self.find_unused_port(5500)
+            if os.path.isfile('/usr/share/applications/realvnc-vncviewer.desktop'):
+                viewer = 'realvnc-vnc-viewer'
+            elif os.path.isfile('/usr/bin/ssvncviewer'):
+                viewer = 'ssvncviewer'
             else:
-                self.vncviewer = subprocess.Popen(
-                    ['vncviewer', '-listen', str(self.vncviewer_port-5500)])
+                viewer = os.path.realpath('/usr/bin/vncviewer')
+                viewer = os.path.basename(viewer)
+            if viewer == 'realvnc-vnc-viewer':
+                scmd = ['vncviewer', '-uselocalcursor=0', '-scaling=aspectfit',
+                       '-securitynotificationtimeout=0', '-warnunencrypted=0',
+                       '-enabletoolbar=0', '-listen', str(self.vncviewer_port)]
+            elif viewer == 'ssvncviewer':
+                scmd = ['ssvncviewer', '-scale', 'auto', '-multilisten',
+                       str(self.vncviewer_port-5500)]
+            elif viewer == 'xtigervncviewer':
+                scmd = ['xtigervncviewer', '-listen', str(self.vncviewer_port)]
+            elif viewer == 'xtightvncviewer':
+                scmd = ['xtightvncviewer', '-listen',
+                       str(self.vncviewer_port-5500)]
+            elif viewer == 'xvnc4viewer':
+                scmd = ['xvnc4viewer',  '-uselocalcursor=0', '-listen',
+                       str(self.vncviewer_port)]
+            else:
+                # A generic vncviewer, e.g. tigervnc on Arch/Fedora/SUSE
+                scmd = ['vncviewer', '-listen', str(self.vncviewer_port)]
+            self.vncviewer = subprocess.Popen(scmd)
 
         # And, tell the clients to connect to the server
-        self.exec_on_selected_clients([cmd, self.vncviewer_port] + list(args))
+        self.exec_on_selected_clients(' '.join([cmd, '"${GUI_IP}:%d"' % self.vncviewer_port] + list(args)))
 
     def on_imi_broadcasts_monitor_user_activate(self, _widget):
         """Handle imi_sbroadcasts_monitor_user.activate event."""
@@ -301,25 +335,34 @@ class EpoptesGui(object):
     def broadcast_screen(self, fullscreen=''):
         """Helper function for on_imi_broadcasts_broadcast_screen*_activate."""
         if self.vncserver is None:
-            pwdfile = config.expand_filename('vncpasswd')
+            # wayland, x11, tty
+            if os.getenv('XDG_SESSION_TYPE', '') == 'wayland':
+                self.warning_dialog("Screen broadcasting isn't supported on Wayland")
+                return
+            # https://tigervnc.org/doc/vncpasswd.html
+            # ...only the first eight characters are significant
             pwd = ''.join(random.sample(
                 string.ascii_letters + string.digits, 8))
+            pwdfile = config.expand_filename('vncpasswd')
+            # DES-encrypted: https://github.com/trinitronx/vncpasswd.py
             subprocess.call(['x11vnc', '-storepasswd', pwd, pwdfile])
             with open(pwdfile, 'rb') as file:
-                pwd = file.read()
-            self.vncserver_port = self.find_unused_port()
-            self.vncserver_pwd = ''.join('\\%o' % c for c in pwd)
+                pwdcrypted = file.read()
+            # Octal-escaped crypted password, needed by VNC clients
+            self.vncserver_pwd = ''.join('\\%o' % c for c in pwdcrypted)
+            self.vncserver_port = self.find_unused_port(5900)
             self.vncserver = subprocess.Popen(
-                ['x11vnc', '-noshm', '-nopw', '-quiet', '-viewonly', '-shared',
-                 '-forever', '-nolookup', '-24to32', '-threads', '-rfbport',
-                 str(self.vncserver_port), '-rfbauth', pwdfile])
+                ['x11vnc', '-24to32', '-clip', 'xinerama0', '-forever',
+                '-nolookup', '-nopw', '-noshm', '-quiet', '-rfbauth', pwdfile,
+                '-rfbport', str(self.vncserver_port), '-shared', '-threads',
+                '-viewonly'])
         # Running `xdg-screensaver reset` as root doesn't reset the D.E.
         # screensaver, so send the reset command to both epoptes processes
         self.exec_on_selected_clients(
             ['reset_screensaver'], mode=EM_SYSTEM_AND_SESSION)
         self.exec_on_selected_clients(
-            ["receive_broadcast", self.vncserver_port, self.vncserver_pwd,
-             fullscreen], mode=EM_SYSTEM_OR_SESSION)
+            'receive_broadcast "${GUI_IP}:%d" "%s" %s' % (self.vncserver_port,
+            self.vncserver_pwd, fullscreen), mode=EM_SYSTEM_OR_SESSION)
 
     def on_imi_broadcasts_broadcast_screen_fullscreen_activate(self, _widget):
         """Handle imi_broadcasts_broadcast_screen_fullscreen.activate event."""
@@ -371,7 +414,7 @@ class EpoptesGui(object):
             inst = client[C_INSTANCE]
             if inst.type == 'offline':
                 continue
-            port = self.find_unused_port()
+            port = self.find_unused_port(5499, -1)
             user = '--'
             if e_m == EM_SESSION and client[C_SESSION_HANDLE]:
                 user = inst.users[client[C_SESSION_HANDLE]]['uname']
@@ -381,7 +424,7 @@ class EpoptesGui(object):
             subprocess.Popen(['xterm', '-T', title, '-e', 'socat',
                               'tcp-listen:%d,keepalive=1' % port,
                               'stdio,raw,echo=0'])
-            self.exec_on_clients(['remote_term', port], [client], mode=e_m)
+            self.exec_on_clients('remote_term "${GUI_IP}:%d"' % port, [client], mode=e_m)
 
     def on_imi_open_terminal_user_locally_activate(self, _widget):
         """Handle imi_open_terminal_user_locally.activate event."""
@@ -408,7 +451,7 @@ class EpoptesGui(object):
     def on_imi_restrictions_mute_sound_activate(self, _widget):
         """Handle imi_restrictions_mute_sound.activate event."""
         self.exec_on_selected_clients(
-            ['mute_sound', 0], mode=EM_SYSTEM_OR_SESSION)
+            ['mute_sound', 0], mode=EM_SYSTEM_AND_SESSION)
 
     def on_imi_restrictions_unmute_sound_activate(self, _widget):
         """Handle imi_restrictions_unmute_sound.activate event."""
@@ -436,7 +479,7 @@ class EpoptesGui(object):
     def on_imi_clients_network_benchmark_activate(self, _widget):
         """Handle imi_clients_network_benchmark.activate event."""
         if not self.benchmark:
-            self.benchmark = Benchmark(self.mainwin, self.daemon.command)
+            self.benchmark = Benchmark(self.mainwin, self.daemon_command)
         self.benchmark.run(self.get_selected_clients() or self.cstore)
 
     def on_imi_clients_information_activate(self, _widget):
@@ -446,7 +489,7 @@ class EpoptesGui(object):
         self.client_information.btn_edit_alias.set_sensitive(
             not self.is_default_group_selected())
         self.client_information.run(
-            self.get_selected_clients()[0], self.daemon.command)
+            self.get_selected_clients()[0], self.daemon_command)
         self.set_label(self.get_selected_clients()[0])
 
     @staticmethod
@@ -460,11 +503,11 @@ class EpoptesGui(object):
 
     def on_imi_help_report_bug_activate(self, _widget):
         """Handle imi_help_report_bug.activate event."""
-        self.open_url("https://bugs.launchpad.net/epoptes")
+        self.open_url("https://github.com/epoptes/epoptes/issues")
 
     def on_imi_help_ask_question_activate(self, _widget):
         """Handle imi_help_ask_question.activate event."""
-        self.open_url("https://answers.launchpad.net/epoptes")
+        self.open_url("https://github.com/epoptes/epoptes/discussions")
 
     def on_imi_help_translate_application_activate(self, _widget):
         """Handle imi_help_translate_application.activate event."""
@@ -472,11 +515,7 @@ class EpoptesGui(object):
 
     def on_imi_help_live_chat_irc_activate(self, _widget):
         """Handle imi_help_live_chat_irc.activate event."""
-        host = socket.gethostname()
-        user = getpass.getuser()
-        lang = locale.getlocale()[0]
-        self.open_url("http://ts.sch.gr/repo/irc?user=%s&host=%s&lang=%s" %
-                      (user, host, lang))
+        self.open_url("https://ltsp.org/guides/chat-room")
 
     @staticmethod
     def on_imi_help_remote_support_activate(_widget):
@@ -716,7 +755,6 @@ class EpoptesGui(object):
         # noinspection PyUnresolvedReferences
         if not reactor.running:
             return
-        self.save_settings()
         msg = _("Lost connection with the epoptes service.")
         msg += "\n\n" + \
                _("Make sure the service is running and then restart epoptes.")
@@ -731,7 +769,7 @@ class EpoptesGui(object):
     def amp_client_connected(self, handle):
         """Called from uiconnection->Daemon->client_connected."""
         LOG.w("New connection from", handle)
-        dfr = self.daemon.command(handle, 'info')
+        dfr = self.daemon_command(handle, 'info')
         dfr.addCallback(lambda r: self.add_client(handle, r.decode()))
         dfr.addErrback(lambda err: LOG.e(
             "Error when connecting client %s: %s" % (handle, err)))
@@ -777,7 +815,7 @@ class EpoptesGui(object):
         """Callback from self.connected=>daemon.enumerate_clients."""
         LOG.w("Got clients:", ', '.join(handles) or 'None')
         for handle in handles:
-            dfr = self.daemon.command(handle, 'info')
+            dfr = self.daemon_command(handle, 'info')
             dfr.addCallback(
                 lambda r, h=handle: self.add_client(h, r.decode(), True))
             dfr.addErrback(lambda err, h=handle: LOG.e(
@@ -846,6 +884,7 @@ class EpoptesGui(object):
             for line in reply.strip().split('\n'):
                 key, value = line.split('=', 1)
                 info[key.strip()] = value.strip()
+            info['memberof'] = info['memberof'].split(',')
             user, host, _ip, mac, type_, uid, version, name = \
                 info['user'], info['hostname'], info['ip'], info['mac'], \
                 info['type'], int(info['uid']), info['version'], info['name']
@@ -853,6 +892,14 @@ class EpoptesGui(object):
             LOG.e("  Can't extract client information, won't add this client",
                   exc)
             return False
+
+        # Support filtering user connections based on group membership
+        if len(self.controls_groups) > 0:
+            intersection = [x for x in info['memberof']
+                            if x in self.controls_groups]
+            if len(intersection) <= 0:
+                LOG.w("  CONTROLS_GROUPS: Won't add this client to my lists")
+                return False
 
         # Support hiding clients in an X-Hidden group
         if self.global_groups and 'X-HIDDEN' in self.x_groups:
@@ -868,7 +915,7 @@ class EpoptesGui(object):
 
         # Compatibility check
         if LooseVersion(version) < LooseVersion(COMPATIBILITY_VERSION):
-            self.daemon.command(
+            self.daemon_command(
                 handle, "die 'Incompatible Epoptes server version!'")
             if not self.displayed_compatibility_warning:
                 self.displayed_compatibility_warning = True
@@ -975,10 +1022,11 @@ class EpoptesGui(object):
         """Callback after running`thumbshot` on a client."""
         for i in self.cstore:
             if handle == i[C_SESSION_HANDLE]:
-                # We want to ask for thumbshots every 5 sec after the last one.
-                # So if the client is too stressed and needs 7 secs to
+                # Ask for a new thumbshot THUMBSHOT_MS msec after the last one.
+                # So if the client is too stressed and needs e.g. 7 secs to
                 # send a thumbshot, we'll ask for one every 12 secs.
-                GLib.timeout_add(5000, self.ask_thumbshot, handle)
+                GLib.timeout_add(int(config.system['THUMBSHOT_MS']),
+                                 self.ask_thumbshot, handle)
                 LOG.d("I got a thumbshot from %s." % handle)
                 if not reply:
                     return
@@ -1026,6 +1074,7 @@ class EpoptesGui(object):
             LOG.d('No clients')
             return
 
+        # ${GUI_PY} must be unquoted, don't pass it as list
         if isinstance(command, list) and len(command) > 0:
             command = '%s %s' % (command[0], ' '.join(
                 [pipes.quote(str(x)) for x in command[1:]]))
@@ -1035,7 +1084,7 @@ class EpoptesGui(object):
                 return
         if clients == [] and handles != []:
             for handle in handles:
-                cmd = self.daemon.command(handle, str(command))
+                cmd = self.daemon_command(handle, str(command))
                 # TODO: do we need errbacks even when no reply?
                 if reply:
                     cmd.addCallback(
@@ -1059,7 +1108,7 @@ class EpoptesGui(object):
                 if handle == '':
                     continue
                 sent = True
-                cmd = self.daemon.command(handle, str(command))
+                cmd = self.daemon_command(handle, str(command))
                 # TODO: do we need errbacks even when no reply?
                 if reply:
                     cmd.addCallback(
