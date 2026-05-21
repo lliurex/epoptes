@@ -1,0 +1,81 @@
+From: daduve <daduve@gmail.com>
+Date: Thu, 21 May 2026 19:47:32 +0200
+Subject: Patch Client-functions
+
+---
+ data/client-functions | 25 ++++++++++++++-----------
+ 1 file changed, 14 insertions(+), 11 deletions(-)
+
+diff --git a/data/client-functions b/data/client-functions
+index cf17ce8..622e7d1 100644
+--- a/data/client-functions
++++ b/data/client-functions
+@@ -194,21 +194,20 @@ EOF
+ background() {
+     local print_pid
+ 
+-    ensure_display
++    #ensure_display
+     if [ "$1" = "-p" ]; then
+         print_pid=true
+         shift
+     fi
++    
++    # On root clients, try to get the active DISPLAY, the command may need it.
++    test "$UID" -eq 0 && export $(./get-display)
+     # The command is run on a subshell with stdin and stdout redirected to
+     # /dev/null, so that it doesn't interfere with the output of other commands.
+     # stderr isn't changed, i.e. ~/.xsession-errors will be used.
+     # See issues #58 and #103 for explanation of the following syntax.
+-    (
+-        unset DESKTOP_AUTOSTART_ID
+-        exec 0</dev/null >/dev/null
+-        "$@"
+-    ) &
+-
++    #( unset DESKTOP_AUTOSTART_ID; exec 0</dev/null >/dev/null; "$@" ) &
++    ( "$@" 0</dev/null >/dev/null ) &
+     test -n "$print_pid" && echo $!
+ }
+ 
+@@ -391,7 +390,8 @@ message() {
+ # Parameters:
+ # $1 = host:port.
+ get_monitored() {
+-    background x11vnc -q -nopw -noshm -24to32 -viewonly -connect_or_exit "$1"
++    #background x11vnc -q -nopw -noshm -24to32 -viewonly -connect_or_exit "$1"
++    background x11vnc -noshm -24to32 -viewonly -connect_or_exit "$1"
+ }
+ 
+ # Connect to the server to get assistance.
+@@ -399,7 +399,8 @@ get_monitored() {
+ # $1 = host:port.
+ # $2 = grab keyboard and mouse.
+ get_assisted() {
+-    background x11vnc -q -nopw -noshm -24to32 ${2:+-grabptr -grabkbd} -connect_or_exit "$1"
++    #background x11vnc -q -nopw -noshm -24to32 ${2:+-grabptr -grabkbd} -connect_or_exit "$1"
++    background x11vnc -noshm -24to32 ${2:+-grabptr -grabkbd} -connect_or_exit "$1"
+ }
+ 
+ # Deactivate the screensaver, in order for the users to watch a broadcast.
+@@ -498,8 +499,9 @@ root_term() {
+ # $1 = host:port.
+ remote_term() {
+     local screen_params
+-
++    REM=$1
+     if [ "$UID" -eq 0 ]; then
++        REM="$SERVER:${1#*:}"
+         screen_params="bash -l"
+     else
+         screen_params="-l"
+@@ -507,7 +509,8 @@ remote_term() {
+     background sh -c "
+ cd
+ sleep 1
+-TERM=xterm exec socat EXEC:'screen $screen_params',pty,stderr tcp:$1"
++#TERM=xterm exec socat EXEC:'screen $screen_params',pty,stderr tcp:$1"
++TERM=xterm exec socat EXEC:'screen $screen_params',pty,stderr tcp:$REM"
+ }
+ 
+ # Ping is called every few seconds just to make sure the connection is alive.
