@@ -1,0 +1,400 @@
+From: daduve <daduve@gmail.com>
+Date: Thu, 21 May 2026 20:16:00 +0200
+Subject: Patch to gui.py
+
+---
+ epoptes/ui/gui.py | 262 ++++++++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 235 insertions(+), 27 deletions(-)
+
+diff --git a/epoptes/ui/gui.py b/epoptes/ui/gui.py
+index 091222f..c7221e2 100644
+--- a/epoptes/ui/gui.py
++++ b/epoptes/ui/gui.py
+@@ -29,7 +29,6 @@ from gi.repository import Gdk, GdkPixbuf, GLib, Gtk
+ 
+ LOG = logger.Logger(__file__)
+ 
+-
+ class EpoptesGui(object):
+     """Epoptes GUI class."""
+ 
+@@ -68,6 +67,11 @@ class EpoptesGui(object):
+             'GUI', 'thumbshots_width', fallback=128)
+         self.ts_height = int(self.ts_width/(4/3))
+         self.uid = os.getuid()
++        # START LLIUREX
++        if not os.path.isdir(os.path.expanduser('~/.config/epoptes/')):
++            os.system("mkdir -p "+os.path.expanduser('~/.config/epoptes/'))
++        # END LLIUREX
++
+         # A comma separated list of Linux groups that this user may control
+         self.controls_groups = os.getenv('CONTROLS_GROUPS')
+         if self.controls_groups:
+@@ -134,7 +138,11 @@ class EpoptesGui(object):
+                 self.groups_file = config.expand_filename('groups.json')
+                 self.global_groups = False
+             try:
+-                _saved_clients, groups = config.read_groups_json(self.groups_file)
++                # START LLIUREX
++                #_saved_clients, groups = config.read_groups(self.groups_file)
++                #_saved_clients, groups = config.read_groups_json(self.groups_file)
++                _saved_clients, groups = config.read_groups(self.groups_file,True)
++                # END LLIUREX
+             except ValueError as exc:
+                 self.warning_dialog(
+                     _('Failed to read the groups file:') + '\n'
+@@ -178,18 +186,28 @@ class EpoptesGui(object):
+ 
+     def save_settings(self):
+         """Helper function for on_imi_file_quit_activate."""
+-        sel_group = self.gstore.get_path(self.get_selected_group()[0])[0]
+-        self.gstore.remove(self.gstore.get_iter(
+-            self.default_group_ref.get_path()))
+-        if not self.global_groups:
+-            config.save_groups(self.groups_file, self.gstore)
+-        settings = config.settings
+-        if not settings.has_section('GUI'):
+-            settings.add_section('GUI')
+-
+-        settings.set('GUI', 'selected_group', str(sel_group))
+-        settings.set('GUI', 'show_real_names', str(self.show_real_names))
+-        settings.set('GUI', 'thumbshots_width', str(self.ts_width))
++        # START LLIUREX
++        try:
++            sel_group = self.gstore.get_path(self.get_selected_group()[0])[0]
++            self.gstore.remove(self.gstore.get_iter(self.default_group_ref.get_path()))
++            if not self.global_groups:
++                #config.save_groups(self.groups_file, self.gstore)
++                config.save_groups(os.path.expanduser('~/.config/epoptes/groups.json'), self.gstore,(self.n4d_user,self.n4d_password))
++
++            settings = config.settings
++            if not settings.has_section('GUI'):
++                settings.add_section('GUI')
++
++            settings.set('GUI', 'selected_group', str(sel_group))
++            settings.set('GUI', 'show_real_names', str(self.show_real_names))
++            settings.set('GUI', 'thumbshots_width', str(self.ts_width))
++            config.write_ini_file(config.expand_filename('settings'), settings)
++
++        except Exception as e:
++               print(str(e))
++               pass
++        #END LIUREX
++
+         config.write_ini_file(config.expand_filename('settings'), settings)
+ 
+     def on_imi_file_quit_activate(self, _widget):
+@@ -318,7 +336,18 @@ class EpoptesGui(object):
+             self.vncviewer = subprocess.Popen(scmd)
+ 
+         # And, tell the clients to connect to the server
+-        self.exec_on_selected_clients(' '.join([cmd, '"${GUI_IP}:%d"' % self.vncviewer_port] + list(args)))
++        #self.exec_on_selected_clients(' '.join([cmd, '"${GUI_IP}:%d"' % self.vncviewer_port] + list(args)))
++        # START LLIUREX
++        #self.exec_on_selected_clients([cmd, self.vncviewer_port] + list(args))
++        # Adding some workarount to solve the "teacher-non-in-server problem"
++        # getting the ip from current machine and use it in xvnc
++        # 
++        class_ip = self.getClassroomIp()
++        if class_ip == None:
++            class_ip = "server"
++        self.exec_on_selected_clients([cmd, str(class_ip)+":"+str(self.vncviewer_port)] + list(args))
++        #END LLIUREX
++
+ 
+     def on_imi_broadcasts_monitor_user_activate(self, _widget):
+         """Handle imi_sbroadcasts_monitor_user.activate event."""
+@@ -334,6 +363,10 @@ class EpoptesGui(object):
+ 
+     def broadcast_screen(self, fullscreen=''):
+         """Helper function for on_imi_broadcasts_broadcast_screen*_activate."""
++        #START LLIUREX
++        class_ip="server"
++        #END LLIUREX
++
+         if self.vncserver is None:
+             # wayland, x11, tty
+             if os.getenv('XDG_SESSION_TYPE', '') == 'wayland':
+@@ -351,6 +384,13 @@ class EpoptesGui(object):
+             # Octal-escaped crypted password, needed by VNC clients
+             self.vncserver_pwd = ''.join('\\%o' % c for c in pwdcrypted)
+             self.vncserver_port = self.find_unused_port(5900)
++            # START LLIUREX
++            class_ip = self.getClassroomIp()
++            if class_ip == None:
++                class_ip = "server"
++
++            # END LLIUREX
++
+             self.vncserver = subprocess.Popen(
+                 ['x11vnc', '-24to32', '-clip', 'xinerama0', '-forever',
+                 '-nolookup', '-nopw', '-noshm', '-quiet', '-rfbauth', pwdfile,
+@@ -360,9 +400,15 @@ class EpoptesGui(object):
+         # screensaver, so send the reset command to both epoptes processes
+         self.exec_on_selected_clients(
+             ['reset_screensaver'], mode=EM_SYSTEM_AND_SESSION)
++
++        # START LLIUREX
++        #self.exec_on_selected_clients(
++            #'receive_broadcast "${GUI_IP}:%d" "%s" %s' % (self.vncserver_port,
++            #self.vncserver_pwd, fullscreen), mode=EM_SYSTEM_OR_SESSION)
+         self.exec_on_selected_clients(
+-            'receive_broadcast "${GUI_IP}:%d" "%s" %s' % (self.vncserver_port,
++            'receive_broadcast "%s:%d" "%s" %s' % (class_ip, self.vncserver_port,
+             self.vncserver_pwd, fullscreen), mode=EM_SYSTEM_OR_SESSION)
++        #END LLIUREX
+ 
+     def on_imi_broadcasts_broadcast_screen_fullscreen_activate(self, _widget):
+         """Handle imi_broadcasts_broadcast_screen_fullscreen.activate event."""
+@@ -414,6 +460,14 @@ class EpoptesGui(object):
+             inst = client[C_INSTANCE]
+             if inst.type == 'offline':
+                 continue
++            # Adding some workarount to solve the "teacher-non-in-server proble
++            # getting the ip from current machine and use it in xvnc
++            
++            # START LLIUREX
++            class_ip = self.getClassroomIp()
++            if class_ip == None:
++                class_ip = "server"
++            # END LLIUREX
+             port = self.find_unused_port(5499, -1)
+             user = '--'
+             if e_m == EM_SESSION and client[C_SESSION_HANDLE]:
+@@ -424,6 +478,9 @@ class EpoptesGui(object):
+             subprocess.Popen(['xterm', '-T', title, '-e', 'socat',
+                               'tcp-listen:%d,keepalive=1' % port,
+                               'stdio,raw,echo=0'])
++            # START LLIUREX
++            port = str(class_ip)+":"+str(port)
++            # END LLIUREX
+             self.exec_on_clients('remote_term "${GUI_IP}:%d"' % port, [client], mode=e_m)
+ 
+     def on_imi_open_terminal_user_locally_activate(self, _widget):
+@@ -448,6 +505,84 @@ class EpoptesGui(object):
+         self.exec_on_selected_clients(
+             ['unlock_screen'], mode=EM_SESSION_AND_SYSTEM)
+ 
++    #STAR LLIUREX
++    def blockInternet(self,widget):
++
++        clients = self.get_selected_clients()
++        fat_clients=["standalone","fat"]
++        for client in clients:
++               if client[C_INSTANCE].type in fat_clients:
++                       ip=list(client[C_INSTANCE].users)[0].split(":")[0]
++                       print("* Blocking standalone client [%s] ..."%ip)
++                       try:
++                               import xmlrpc.client as n4dclient
++                               import ssl
++                               context=ssl._create_unverified_context()
++                               c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
++                               #natfree or not
++                               if os.path.exists("/usr/bin/nfctl"):
++                                       key=list(client[C_INSTANCE].users)[0]
++                                       c=n4dclient.ServerProxy("https://%s:9779"%ip,context=context,allow_none=True)
++                                       user=client[C_INSTANCE].users[key]["uname"]
++                                       c.block((self.n4d_user,self.n4d_password),"IptablesManager",user)
++                               else:
++                                       c.block((self.n4d_user,self.n4d_password),"IptablesManager","",ip)
++
++                       except Exception as e:
++                               print(str(e))
++
++               if client[C_INSTANCE].type=="thin":
++                       key=list(client[C_INSTANCE].users)[0]
++                       user=client[C_INSTANCE].users[key]["uname"]
++                       print("* Blocking thin client [%s] ..."%user)
++                       try:
++                               import xmlrpc.client as n4dclient
++                               import ssl
++                               context=ssl._create_unverified_context()
++                               c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
++                               c.block((self.n4d_user,self.n4d_password),"IptablesManager",user,"127.0.0.1")
++                       except Exception as e:
++                               print(str(e))
++    
++    def unblockInternet(self,widget):
++        clients = self.get_selected_clients()
++        fat_clients=["standalone","fat"]
++        for client in clients:
++            if client[C_INSTANCE].type in fat_clients:
++                ip=list(client[C_INSTANCE].users)[0].split(":")[0]
++                print("* Unblocking standalone client [%s] ..."%ip)
++                try:
++                       import xmlrpc.client as n4dclient
++                       import ssl
++                       context=ssl._create_unverified_context()
++                       if os.path.exists("/usr/bin/nfctl"):
++                               key=list(client[C_INSTANCE].users)[0]
++                               c=n4dclient.ServerProxy("https://%s:9779"%ip,context=context,allow_none=True)
++                               user=client[C_INSTANCE].users[key]["uname"]
++                               print(c.unblock((self.n4d_user,self.n4d_password),"IptablesManager",user))
++                       else:
++                               c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
++                               c.unblock((self.n4d_user,self.n4d_password),"IptablesManager","",ip)
++                except Exception as e:
++                    print(str(e))
++
++            if client[C_INSTANCE].type=="thin":
++                key=list(client[C_INSTANCE].users)[0]
++                user=client[C_INSTANCE].users[key]["uname"]
++                print("* Unblocking thin client [%s] ..."%user)
++                try:
++                    import xmlrpc.client as n4dclient
++                    import ssl
++                    context=ssl._create_unverified_context()
++                    c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
++                    c.unblock((self.n4d_user,self.n4d_password),"IptablesManager",user,"127.0.0.1")
++                except Exception as e:
++                    print(str(e))
++
++    # END LLIUREX     
++
++
++
+     def on_imi_restrictions_mute_sound_activate(self, _widget):
+         """Handle imi_restrictions_mute_sound.activate event."""
+         self.exec_on_selected_clients(
+@@ -472,9 +607,20 @@ class EpoptesGui(object):
+         if self.confirmation_dialog(
+                 _('Are you sure you want to remove the selected client(s)'
+                   ' from group "%s"?') % group.name):
+-            for client in clients:
+-                group.remove_client(client[C_INSTANCE])
+-            self.fill_icon_view(self.get_selected_group()[1], True)
++            #for client in clients:
++                #group.remove_client(client[C_INSTANCE])
++            #self.fill_icon_view(self.get_selected_group()[1], True)
++            # START LLIUREX
++            try:
++               for client in clients:
++                       print(group)
++                       group.remove_client(client[C_INSTANCE])
++               self.fill_icon_view(self.get_selected_group()[1], True)
++            except Exception as e:
++               print(str(e))
++               pass
++           # END LLIUREX
++
+ 
+     def on_imi_clients_network_benchmark_activate(self, _widget):
+         """Handle imi_clients_network_benchmark.activate event."""
+@@ -821,6 +967,36 @@ class EpoptesGui(object):
+             dfr.addErrback(lambda err, h=handle: LOG.e(
+                 "Error when enumerating client %s: %s" % (h, err)))
+ 
++    #START LLIUREX
++    def searchInGroups(self,yo,cliente):
++
++        if (yo == cliente):
++            return 1
++        import subprocess as sp
++        p1 = sp.Popen(["id",yo],stdout=sp.PIPE)
++        p2 = sp.Popen(["id",cliente],stdout=sp.PIPE)
++        out1,err1 = p1.communicate()
++        out2,err2 = p2.communicate()
++        
++        if type(out1) is bytes:
++            out1=out1.decode()
++        if type(out2) is bytes:
++            out2=out2.decode()    
++        
++        if (out2.find('teachers') == -1):
++            #if he is student must be showed
++            return 1
++        else:
++            #he's a teacher
++            if (out1.find('admins') == -1):
++                #if im not promoted teacher other teachers must be hidden
++                return 0
++            else:
++                #if im a promoted teacher other teachers must be displayed
++                return 1
++    #END LLIUREX
++
++
+     def add_to_icon_view(self, client):
+         """Properly add a Client class instance to the clients iconview."""
+         # If there are one or more users on client, add a new iconview entry
+@@ -830,10 +1006,17 @@ class EpoptesGui(object):
+             label = 'rname'
+         if client.users:
+             for hsession, user in client.users.items():
+-                self.cstore.append(
+-                    [self.calculate_label(client, user[label]),
+-                     self.imagetypes[client.type], client, hsession])
+-                self.ask_thumbshot(hsession, True)
++                #self.cstore.append(
++                    #[self.calculate_label(client, user[label]),
++                     #self.imagetypes[client.type], client, hsession])
++                #self.ask_thumbshot(hsession, True)
++               # START LLIUREX
++                if self.searchInGroups(self.n4d_user,user['uname']):
++                    self.cstore.append(
++                        [self.calculate_label(client, user[label]),
++                         self.imagetypes[client.type], client, hsession])
++                    self.ask_thumbshot(hsession, True)
++                # END LLIUREX
+         else:
+             self.cstore.append(
+                 [self.calculate_label(client),
+@@ -909,7 +1092,10 @@ class EpoptesGui(object):
+ 
+         # Check if the incoming client is the same with the computer in which
+         # epoptes is running, so we don't add it to the list.
+-        if (mac in self.current_macs) and ((uid == self.uid) or (uid == 0)):
++        # START LLIUREX
++        #if (mac in self.current_macs) and ((uid == self.uid) or (uid == 0)):
++        if (mac in self.current_macs) and (uid == self.uid):
++        # END LLIUREX
+             LOG.w("  SAME-PC: Won't add this client to my lists")
+             return False
+ 
+@@ -947,8 +1133,7 @@ class EpoptesGui(object):
+         else:
+             # This is a user epoptes-client
+             client.add_user(user, name, handle)
+-            if not already and (sel_group.has_client(client)
+-                                or self.is_default_group_selected()):
++            if not already and (sel_group.has_client(client) or self.is_default_group_selected()):
+                 self.notify_queue.enqueue(
+                     _("Connected:"),
+                     _("%(user)s on %(host)s") % {"user": user, "host": host})
+@@ -1099,7 +1284,11 @@ class EpoptesGui(object):
+                 if e_m == EM_SESSION_ONLY:
+                     handle = client[C_SESSION_HANDLE]
+                 elif e_m == EM_SYSTEM_ONLY:
+-                    handle = client[C_INSTANCE].hsystem
++                    try:
++                        handle = client[C_INSTANCE].hsystem
++                        print(handle)
++                    except Exception as e:
++                        print(str(e))  
+                 else:  # e_m == EM_EXIT_IF_SENT
+                     if sent:
+                         break
+@@ -1143,3 +1332,22 @@ class EpoptesGui(object):
+             text, title=_('Warning'))
+         dlg.run()
+         dlg.destroy()
++    #START LLIUREX
++    def getClassroomIp(self):
++        '''
++        Adding some workarount to solve the "teacher-non-in-server problem"
++        getting the ip from current machine and use it in xvnc
++        ''' 
++        class_ip = None
++        try:
++            import socket
++            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
++            s.connect(("server",80))
++            class_ip = s.getsockname()[0]
++            s.close()
++            if "127.0.0.1" == class_ip:
++                return None
++        except Exception as e:
++            print(str(e))
++        return class_ip
++    #END LLIUREX
+\ No newline at end of file
