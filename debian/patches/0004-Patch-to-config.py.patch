@@ -1,0 +1,102 @@
+From: daduve <daduve@gmail.com>
+Date: Thu, 21 May 2026 20:03:22 +0200
+Subject: Patch to config.py
+
+---
+ epoptes/common/config.py | 54 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 52 insertions(+), 2 deletions(-)
+
+diff --git a/epoptes/common/config.py b/epoptes/common/config.py
+index efcb986..cf412df 100644
+--- a/epoptes/common/config.py
++++ b/epoptes/common/config.py
+@@ -159,10 +159,11 @@ def read_groups_ltsp(filename):
+     return clients_struct.values(), groups_struct
+ 
+ 
+-def read_groups_json(filename):
++def read_groups(filename,n4d_mode=None):
+     """Parse a JSON file and create the appropriate group and client objects.
+     Return a 2-tuple with a client instances list and a group instances list.
+     """
++    '''
+     if not os.path.isfile(filename):
+         return [], []
+     try:
+@@ -171,6 +172,30 @@ def read_groups_json(filename):
+     except (IOError, OSError) as exc:
+         LOG.e(exc)
+         return [], []
++    '''
++    if not n4d_mode:
++        try:
++            f=open(filename)
++            data = json.loads(f.read())
++            f.close()
++        except:
++            return ([],[])
++    else:
++        try:
++               import xmlrpc.client as x
++               import ssl
++               context=ssl._create_unverified_context()
++               c=x.ServerProxy("https://server:9779",context=context,allow_none=True)
++               data=c.get_variable("EPOPTES_GROUPS").get('return',None)
++               #print "***** EPOPTES N4D DATA: [%s] ..."%data
++               # If not exists value to EPOPTES GROUP in N4D, .config/epoptes/groups.json is listed
++               if data==None or data=={}:
++                       f=open(filename)
++                       data = json.loads(f.read())
++                       f.close()
++                       #raise Exception
++        except:
++               return ([],[])
+ 
+     saved_clients = {}
+ 
+@@ -189,10 +214,18 @@ def read_groups_json(filename):
+     return saved_clients.values(), groups
+ 
+ 
+-def save_groups(filename, model):
++def save_groups(filename, model,n4d_mode=None):
+     """Save the groups and their members from model (gtk.ListStore) in JSON
+     format.
+     """
++    path = os.path.expanduser('~/.config/epoptes/')
++    try:
++        if not os.path.isdir(path):
++            os.makedirs(path)
++    except:
++        pass
++
++    
+     data = {'clients': {}, 'groups': []}
+     uid = 0
+     uid_pairs = {}
+@@ -225,8 +258,25 @@ def save_groups(filename, model):
+         makedirs_for_file(filename)
+         with open(filename, 'w') as file:
+             file.write(json.dumps(data, indent=2))
++
++        f=open(filename)
++        datas=json.loads(f.read())
++        f.close()
++   
+     except (IOError, OSError) as exc:
+         LOG.e(exc)
++        pass
++    
++    if n4d_mode!=None:
++       import xmlrpc.client as x
++       import ssl
++       context=ssl._create_unverified_context()
++       c=x.ServerProxy("https://server:9779",context=context,allow_none=True)
++       # Just in case EPOPTES_GROUPS Variable does not exist
++       #print c.add_variable(n4d_mode,"VariablesManager","EPOPTES_GROUPS",{},"","Epoptes Groups",[],False,False)
++       if c.add_group(n4d_mode,"EpoptesVariables",n4d_mode).get('status',None)==0:
++               #print c.set_variable(n4d_mode,"VariablesManager","EPOPTES_GROUPS",data)
++               c.set_group(n4d_mode,"EpoptesVariables",n4d_mode,datas)
+ 
+ 
+ system = {}
