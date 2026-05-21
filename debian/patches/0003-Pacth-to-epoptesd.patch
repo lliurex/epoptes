@@ -1,0 +1,28 @@
+From: daduve <daduve@gmail.com>
+Date: Thu, 21 May 2026 20:01:12 +0200
+Subject: Pacth to epoptesd
+
+---
+ twisted/plugins/epoptesd.py | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/twisted/plugins/epoptesd.py b/twisted/plugins/epoptesd.py
+index 7735493..5f58440 100644
+--- a/twisted/plugins/epoptesd.py
++++ b/twisted/plugins/epoptesd.py
+@@ -87,9 +87,15 @@ class ServiceMaker(object):
+         os.chmod(config.system['DIR'], 0o2770)
+         os.chown(config.system['DIR'], -1, gid)
+ 
++        gui_service = internet.TCPServer(
++        10000,
++        guiplex.GUIFactory())
++        
++        '''
+         gui_service = internet.UNIXServer(
+             "%s/epoptes.socket" % config.system['DIR'],
+             guiplex.GUIFactory())
++        '''
+ 
+         top_service = service.MultiService()
+         top_service.addService(client_service)
