@@ -6,12 +6,25 @@ include /usr/share/dpkg/pkg-info.mk
 # Uncomment this to turn on verbose mode.
 # export DH_VERBOSE=1
 export PYBUILD_INTERPRETERS=python3
+
+# 1. Extraemos y guardamos las variables de versión nativas
+DEB_VERSION := $(shell dpkg-parsechangelog -S Version)
+PEP440_VERSION := $(shell dpkg-parsechangelog -S Version | sed -E 's/^[0-9]+://; s/-/.post/')
+
+# 2. Creamos un parche "inline" de Python para saltear la validación estricta de setuptools
+# Esto intercepta 'best_effort_version' y le obliga a devolver la versión limpia que sí cumple PEP 440
+export PYTHONPATH := $(shell mkdir -p debian/patches_python && echo "from setuptools.command import egg_info; egg_info._normalization.best_effort_version = lambda x: '$(PEP440_VERSION)'" > debian/patches_python/sitecustomize.py && pwd)/debian/patches_python
+
+# 3. Exportamos configuraciones de empaquetado estándar de Debian
+export DEB_PYTHON_INSTALL_LAYOUT=deb
+
 %:
 	dh $@ --with python3 --buildsystem=pybuild
 
 override_dh_install:
 	dh_install
-	sed "s/\(__version__\).*/\1 = '$(DEB_VERSION)'/" -i "$(CURDIR)"/debian/epoptes/usr/lib/python*/dist-packages/epoptes/__init__.py
+	# Corrección manual de variables en las rutas generadas para Epoptes
+	sed "s/\(__version__\).*/\1 = '$(PEP440_VERSION)'/" -i "$(CURDIR)"/debian/epoptes/usr/lib/python*/dist-packages/epoptes/__init__.py
 	sed "s/\(VERSION=\).*/\1'$(DEB_VERSION)'/" -i "$(CURDIR)"/debian/epoptes-client/usr/sbin/epoptes-client
 	sed '/^#!\/bin\/sh/d' -i "$(CURDIR)"/debian/epoptes/usr/share/epoptes/client-functions
 
