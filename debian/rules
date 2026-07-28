@@ -6,25 +6,12 @@ include /usr/share/dpkg/pkg-info.mk
 # Uncomment this to turn on verbose mode.
 # export DH_VERBOSE=1
 export PYBUILD_INTERPRETERS=python3
-
-# 1. Definimos las versiones al principio para que funcionen en todo el archivo
-DEB_VERSION := $(shell dpkg-parsechangelog -S Version)
-PEP440_VERSION := $(shell dpkg-parsechangelog -S Version | sed -E 's/^[0-9]+://; s/-/.post/')
-
-# 2. Engañamos a las herramientas de Python exportando la versión limpia globalmente
-export SETUPTOOLS_SCM_PRETEND_VERSION=$(PEP440_VERSION)
-
 %:
 	dh $@ --with python3 --buildsystem=pybuild
 
-# 3. INTERCEPCIÓN CRÍTICA: Forzamos a setuptools a usar la versión PEP 440 en la compilación
-override_dh_auto_configure:
-	dh_auto_configure -- --version=$(PEP440_VERSION)
-
 override_dh_install:
 	dh_install
-	# Aquí usamos la versión limpia de PEP 440 para evitar errores en los archivos .py internos de Epoptes
-	sed "s/\(__version__\).*/\1 = '$(PEP440_VERSION)'/" -i "$(CURDIR)"/debian/epoptes/usr/lib/python*/dist-packages/epoptes/__init__.py
+	sed "s/\(__version__\).*/\1 = '$(DEB_VERSION)'/" -i "$(CURDIR)"/debian/epoptes/usr/lib/python*/dist-packages/epoptes/__init__.py
 	sed "s/\(VERSION=\).*/\1'$(DEB_VERSION)'/" -i "$(CURDIR)"/debian/epoptes-client/usr/sbin/epoptes-client
 	sed '/^#!\/bin\/sh/d' -i "$(CURDIR)"/debian/epoptes/usr/share/epoptes/client-functions
 
