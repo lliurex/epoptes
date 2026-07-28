@@ -1,3 +1,9 @@
+epoptes (1:23.08-1) noble; urgency=medium
+
+  * Adding upstream files
+
+ -- Daniel Duran <daduve@gmail.com>  Tue, 28 Jul 2026 10:32:32 +0200
+
 epoptes (23.08-1) unstable; urgency=medium
 
   [ Myrto Georgopoulou ]
