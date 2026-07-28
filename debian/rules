@@ -6,32 +6,25 @@ include /usr/share/dpkg/pkg-info.mk
 # Uncomment this to turn on verbose mode.
 # export DH_VERBOSE=1
 export PYBUILD_INTERPRETERS=python3
-
 # 1. Declaramos y limpiamos las variables de versión al vuelo
 DEB_VERSION := $(shell dpkg-parsechangelog -S Version)
 PEP440_VERSION := $(shell dpkg-parsechangelog -S Version | sed -E 's/^[0-9]+://; s/-/.post/')
 
-# 2. Forzamos de manera agresiva las variables globales que consultan setuptools y pip
+# 2. Forzamos la versión limpia en el entorno de setuptools globalmente
 export SETUPTOOLS_SCM_PRETEND_VERSION=$(PEP440_VERSION)
 export FORCE_SOURCE_VERSION=$(PEP440_VERSION)
 export DEB_PYTHON_INSTALL_LAYOUT=deb
 
+# 3. Esta es la sintaxis correcta para pasar la versión limpia a setup.py a través de pybuild
+export PYBUILD_SETUP_ARGS=--version=$(PEP440_VERSION)
+
 %:
 	dh $@ --with python3 --buildsystem=pybuild
 
-# 3. Forzamos la versión limpia en CUALQUIER llamada interna del sistema de construcción
-override_dh_auto_configure:
-	dh_auto_configure -- --version=$(PEP440_VERSION)
-
-override_dh_auto_build:
-	dh_auto_build -- --version=$(PEP440_VERSION)
-
-override_dh_auto_install:
-	dh_auto_install -- --version=$(PEP440_VERSION)
-
+# 4. Eliminamos los overrides problemáticos de configure/build/install para que pybuild trabaje de forma nativa
 override_dh_install:
 	dh_install
-	# Corrección de los archivos generados con las variables del entorno
+	# Corrección manual de variables en las rutas generadas
 	sed "s/\(__version__\).*/\1 = '$(PEP440_VERSION)'/" -i "$(CURDIR)"/debian/epoptes/usr/lib/python*/dist-packages/epoptes/__init__.py
 	sed "s/\(VERSION=\).*/\1'$(DEB_VERSION)'/" -i "$(CURDIR)"/debian/epoptes-client/usr/sbin/epoptes-client
 	sed '/^#!\/bin\/sh/d' -i "$(CURDIR)"/debian/epoptes/usr/share/epoptes/client-functions
