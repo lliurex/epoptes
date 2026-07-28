@@ -6,7 +6,11 @@ include /usr/share/dpkg/pkg-info.mk
 # Uncomment this to turn on verbose mode.
 # export DH_VERBOSE=1
 export PYBUILD_INTERPRETERS=python3
+# 1. Extrae la versión de Debian y limpia el '1:' y el '-1'
+DEB_VERSION := $(shell dpkg-parsechangelog -S Version | sed -E 's/^[0-9]+://; s/-/.post/')
 
+# 2. Fuerza a pybuild a inyectar esta versión limpia en los metadatos de Python
+export PYBUILD_ARGS = --version=$(DEB_VERSION)
 %:
 	dh $@ --with python3 --buildsystem=pybuild
 
