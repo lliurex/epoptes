@@ -7,6 +7,7 @@ Build-Depends: debhelper (>= 10),
  dh-python,
  python3-distutils-extra,
  python3:any,
+ llxsrchelper,
 Standards-Version: 4.6.2
 Rules-Requires-Root: no
 Vcs-Git: https://github.com/epoptes/epoptes
@@ -34,7 +35,9 @@ Depends: ${python3:Depends}, ${misc:Depends},
  xvnc4viewer | tigervnc-viewer | ssvnc | xtightvncviewer | vnc-viewer | realvnc-vnc-viewer,
  socat,
  x11vnc,
- xterm
+ xterm,
+ n4d-epoptes-commom,
+ n4d-epoptes-server
 Recommends: epoptes-client
 Description: Computer lab management tool
  Epoptes is an open source computer lab management and monitoring tool. It
