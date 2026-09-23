@@ -1,3 +1,9 @@
+epoptes (1:23.08-1+lliurex1) noble; urgency=medium
+
+  * epoptes backport from lliurex 23 plus wayland support
+
+ -- Hector Garcia Huerta <hectorgh@gmail.com>  Wed, 23 Sep 2026 13:56:45 +0200
+
 epoptes (1:20.01-1~ubuntu20.04.3+lliurex9) jammy; urgency=medium
 
   * Disable Wake on LAN button.
