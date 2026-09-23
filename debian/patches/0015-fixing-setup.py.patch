@@ -1,0 +1,20 @@
+From: cless <hectorgh@gmail.com>
+Date: Wed, 23 Sep 2026 14:18:27 +0200
+Subject: fixing setup.py
+
+---
+ setup.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/setup.py b/setup.py
+index 3806edd..7b7b3c5 100755
+--- a/setup.py
++++ b/setup.py
+@@ -22,6 +22,7 @@ def changelog_version(changelog="debian/changelog"):
+         match = re.compile(r".*\((.*)\).*").match(head)
+         if match:
+             version = match.group(1)
++    version = version.replace("+", "~").replace("~", "+", 1).replace("~", "-").replace(":","!")
+     return version
+ 
+ 

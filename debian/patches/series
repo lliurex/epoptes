@@ -12,3 +12,4 @@
 0012-fixed-small-errors.patch
 0013-Disable-Wake-on-lan-button.patch
 0014-wayland_support_via_krfb.patch
+0015-fixing-setup.py.patch
