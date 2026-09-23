@@ -1,4 +1,4 @@
-epoptes (1:23.08-1+lliurex2) noble; urgency=medium
+epoptes (1:23.08-1+lliurex3) noble; urgency=medium
 
   * epoptes backport from lliurex 23 plus wayland support
 

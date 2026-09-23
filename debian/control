@@ -39,7 +39,7 @@ Depends: ${python3:Depends}, ${misc:Depends},
  tigervnc-viewer,
  tigervnc-tools, 
  n4d-iptablesmanager,
- n4d-kfrbmanager
+ n4d-krfbmanager
 Recommends: epoptes-client
 Description: Computer lab management tool
  Epoptes is an open source computer lab management and monitoring tool. It
