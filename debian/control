@@ -71,6 +71,7 @@ Recommends:
  x11vnc,
  xterm,
  xvnc4viewer | tigervnc-viewer | ssvnc | vnc-viewer,
+ n4d-krfbmanager
 Suggests: ethtool
 Description: Computer lab management tool (client)
  Epoptes is an open source computer lab management and monitoring tool. It
