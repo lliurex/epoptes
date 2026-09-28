@@ -6,3 +6,4 @@
 0006-Patch-to-gui.py.patch
 0007-Adding-Patch-bin-epoptes.patch
 0008-Twisted-protocol.patch
+0009-wayland_support_via_krfb.patch
