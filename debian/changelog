@@ -1,3 +1,9 @@
+epoptes (1:23.08-2) noble; urgency=medium
+
+  * Adding Wayland Patches 
+
+ -- Daniel Duran <daduve@gmail.com>  Mon, 28 Sep 2026 18:00:07 +0200
+
 epoptes (1:23.08-1) noble; urgency=medium
 
   * Adding upstream files
