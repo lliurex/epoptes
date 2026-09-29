@@ -36,7 +36,9 @@ Depends: ${python3:Depends}, ${misc:Depends},
  socat,
  x11vnc,
  xterm,
- n4d-epoptes-commom,
+ n4d-iptablesmanager,
+ n4d-krfbmanager,
+ n4d-epoptes-common,
  n4d-epoptes-server
 Recommends: epoptes-client
 Description: Computer lab management tool
