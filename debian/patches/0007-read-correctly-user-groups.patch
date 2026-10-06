@@ -1,0 +1,27 @@
+From: daduve <daduve@gmail.com>
+Date: Tue, 6 Oct 2026 23:04:09 +0200
+Subject: read correctly user groups
+
+---
+ bin/epoptes | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/bin/epoptes b/bin/epoptes
+index f113244..caa1017 100755
+--- a/bin/epoptes
++++ b/bin/epoptes
+@@ -246,7 +246,13 @@ def main():
+                     ok=True
+                 else:
+                     msg="<span foreground='red'>Error: " + str(ret.get('msg',None)) + ". Code : "+str(ret.get('status',None)) + "</span>"
+-        groups = [g.gr_name for g in grp.getgrall() if os.environ["USER"] in g.gr_mem]
++        #START LLIUREX
++        #groups = [g.gr_name for g in grp.getgrall() if os.environ["USER"] in g.gr_mem]
++        user=getpass.getuser()
++        gid = pwd.getpwnam(user).pw_gid
++        groups_gids = os.getgrouplist(user, gid)
++        groups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
++        #END LLIUREX
+         is_member=config.system['SOCKET_GROUP'] in groups
+     except Exception as e:
+         print(str(e))

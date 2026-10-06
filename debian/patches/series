@@ -4,3 +4,4 @@
 0004-lliurex-common.patch
 0005-lliurex-gui.patch
 0006-fix-groups-for-CDC.patch
+0007-read-correctly-user-groups.patch
