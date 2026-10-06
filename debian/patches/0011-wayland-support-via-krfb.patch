@@ -1,0 +1,191 @@
+From: daduve <daduve@gmail.com>
+Date: Tue, 6 Oct 2026 23:56:57 +0200
+Subject: wayland support via krfb
+
+---
+ data/client-functions | 18 ++++++++--
+ epoptes/ui/gui.py     | 95 +++++++++++++++++++++++++++++++++++----------------
+ 2 files changed, 82 insertions(+), 31 deletions(-)
+
+diff --git a/data/client-functions b/data/client-functions
+index b26aa0b..8bd396a 100644
+--- a/data/client-functions
++++ b/data/client-functions
+@@ -394,7 +394,14 @@ message() {
+ # $1 = host:port.
+ get_monitored() {
+     #background x11vnc -q -nopw -noshm -24to32 -viewonly -connect_or_exit "$1"
+-    background x11vnc -noshm -24to32 -viewonly -connect_or_exit "$1"
++    #START LLIUREX
++    #background x11vnc -noshm -24to32 -viewonly -connect_or_exit "$1"
++    flatpak permission-set kde-authorized remote-desktop org.kde.krdpserver yes
++    flatpak permission-set kde-authorized remote-desktop org.kde.krfb yes
++    flatpak permission-set kde-authorized remote-desktop epoptes-client yes
++    flatpak permission-set kde-authorized remote-desktop epoptes-desktop-client yes
++    background krfb --nodialog
++    #END LLIUREX
+ }
+ 
+ # Connect to the server to get assistance.
+@@ -403,7 +410,14 @@ get_monitored() {
+ # $2 = grab keyboard and mouse.
+ get_assisted() {
+     #background x11vnc -q -nopw -noshm -24to32 ${2:+-grabptr -grabkbd} -connect_or_exit "$1"
+-    background x11vnc -noshm -24to32 ${2:+-grabptr -grabkbd} -connect_or_exit "$1"
++    #START LLIUREX
++    #background x11vnc -noshm -24to32 ${2:+-grabptr -grabkbd} -connect_or_exit "$1"
++    flatpak permission-set kde-authorized remote-desktop org.kde.krdpserver yes
++    flatpak permission-set kde-authorized remote-desktop org.kde.krfb yes
++    flatpak permission-set kde-authorized remote-desktop epoptes-client yes
++    flatpak permission-set kde-authorized remote-desktop epoptes-desktop-client yes
++    background krfb --nodialog
++    #END LLIUREX
+ }
+ 
+ # Deactivate the screensaver, in order for the users to watch a broadcast.
+diff --git a/epoptes/ui/gui.py b/epoptes/ui/gui.py
+index 6bc08a7..1f2b6ed 100644
+--- a/epoptes/ui/gui.py
++++ b/epoptes/ui/gui.py
+@@ -12,6 +12,7 @@ import random
+ import socket
+ import string
+ import subprocess
++import time
+ 
+ from epoptes.ui.reactor import reactor
+ from epoptes.common.constants import *
+@@ -26,6 +27,8 @@ from epoptes.ui.notifications import NotifyQueue
+ from epoptes.ui.send_message import SendMessage
+ 
+ from gi.repository import Gdk, GdkPixbuf, GLib, Gtk
++import xmlrpc.client as n4dclient
++import ssl
+ 
+ LOG = logger.Logger(__file__)
+ 
+@@ -304,35 +307,23 @@ class EpoptesGui(object):
+ 
+     def reverse_connection(self, cmd, *args):
+         """Helper function for on_imi_broadcasts_*_activate."""
+-        # Open vncviewer in listen mode
+-        if self.vncviewer is None or self.vncviewer.poll() is not None:
+-            self.vncviewer_port = self.find_unused_port(5500)
+-            if os.path.isfile('/usr/share/applications/realvnc-vncviewer.desktop'):
+-                viewer = 'realvnc-vnc-viewer'
+-            elif os.path.isfile('/usr/bin/ssvncviewer'):
+-                viewer = 'ssvncviewer'
+-            else:
+-                viewer = os.path.realpath('/usr/bin/vncviewer')
+-                viewer = os.path.basename(viewer)
+-            if viewer == 'realvnc-vnc-viewer':
+-                scmd = ['vncviewer', '-uselocalcursor=0', '-scaling=aspectfit',
+-                       '-securitynotificationtimeout=0', '-warnunencrypted=0',
+-                       '-enabletoolbar=0', '-listen', str(self.vncviewer_port)]
+-            elif viewer == 'ssvncviewer':
+-                scmd = ['ssvncviewer', '-scale', 'auto', '-multilisten',
+-                       str(self.vncviewer_port-5500)]
+-            elif viewer == 'xtigervncviewer':
+-                scmd = ['xtigervncviewer', '-listen', str(self.vncviewer_port)]
+-            elif viewer == 'xtightvncviewer':
+-                scmd = ['xtightvncviewer', '-listen',
+-                       str(self.vncviewer_port-5500)]
+-            elif viewer == 'xvnc4viewer':
+-                scmd = ['xvnc4viewer',  '-uselocalcursor=0', '-listen',
+-                       str(self.vncviewer_port)]
+-            else:
+-                # A generic vncviewer, e.g. tigervnc on Arch/Fedora/SUSE
+-                scmd = ['vncviewer', '-listen', str(self.vncviewer_port)]
+-            self.vncviewer = subprocess.Popen(scmd)
++        self.assist=False
++        if cmd == "get_assisted":
++            self.assist=True
++
++        clients = self.get_selected_clients()
++        for client in clients:
++            ip=list(client[C_INSTANCE].users)[0].split(":")[0]
++            key=list(client[C_INSTANCE].users)[0]
++            user=client[C_INSTANCE].users[key]["uname"]
++            print(user,ip)
++            context=ssl._create_unverified_context()
++            c=n4dclient.ServerProxy("https://%s:9779"%ip,context=context,allow_none=True)
++            ret=c.set_krfb_config((self.n4d_user,self.n4d_password),"KrfbManager",user,True,False)
++            print(ret)
++            with open(f"/tmp/.{user}_access","w") as f:
++                f.write(ret["return"])
++            os.system(f"cat /tmp/.{user}_access | vncpasswd -f >/run/epoptes/{user}_access")
+ 
+         # START LLIUREX
+         # And, tell the clients to connect to the server
+@@ -345,6 +336,33 @@ class EpoptesGui(object):
+             class_ip = "server"
+             self.exec_on_selected_clients([cmd, str(class_ip)+":"+str(self.vncviewer_port)] + list(args))
+         #END LLIUREX
++    
++    def execute_wl_viewer(self,handle,reply,assist=False):
++
++        clients = self.get_selected_clients()
++        for client in clients:
++            ip=list(client[C_INSTANCE].users)[0].split(":")[0]
++            key=list(client[C_INSTANCE].users)[0]
++            user=client[C_INSTANCE].users[key]["uname"]
++            timeout=5.0
++            while True:
++                s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
++                ret=s.connect_ex(("%s"%ip,5900))
++                if ret == 0:
++                    break
++                else:
++                    if timeout >0.0:
++                        print("Sleeping. Waiting for krfb to be ready...")
++                        time.sleep(0.5)
++                        timeout-=0.5
++                    else:
++                        break
++            print("vncviewer %s"%time.time())
++            #os.system("sleep 10")
++            assist_mode="" if self.assist else "-ViewOnly"
++            subprocess.Popen(f"vncviewer {ip}:5900 {assist_mode} -geometry 800x600+1920+1080 -passwd /run/epoptes/{user}_access",shell=True)
++            print("vncviewer done %s"%time.time())
++
+ 
+     def on_imi_broadcasts_monitor_user_activate(self, _widget):
+         """Handle imi_sbroadcasts_monitor_user.activate event."""
+@@ -385,11 +403,29 @@ class EpoptesGui(object):
+             if class_ip == None:
+                 class_ip = "server"
+             # END LLIUREX
++            context=ssl._create_unverified_context()
++            c=n4dclient.ServerProxy("https://localhost:9779",context=context,allow_none=True)
++            ret=c.set_krfb_config((self.n4d_user,self.n4d_password),"KrfbManager",self.n4d_user,True,False)
++            with open(f"/tmp/.{self.n4d_user}_access","w") as f:
++                f.write(ret["return"])
++            os.system(f"cat /tmp/.{self.n4d_user}_access | vncpasswd -f >/run/epoptes/master")
++            with open("/run/epoptes/master", 'rb') as file:
++                pwd = file.read()
++            os.remove(f"/tmp/.{self.n4d_user}_access")
++            self.vncserver_pwd = ''.join('\\%o' % c for c in pwd)
++
++            '''
+             self.vncserver = subprocess.Popen(
+                 ['x11vnc', '-24to32', '-clip', 'xinerama0', '-forever',
+                 '-nolookup', '-nopw', '-noshm', '-quiet', '-rfbauth', pwdfile,
+                 '-rfbport', str(self.vncserver_port), '-shared', '-threads',
+                 '-viewonly'])
++            '''
++            os.system("flatpak permission-set kde-authorized remote-desktop org.kde.krdpserver yes")
++            os.system("flatpak permission-set kde-authorized remote-desktop org.kde.krfb yes")
++            os.system("flatpak permission-set kde-authorized remote-desktop epoptes yes")
++            os.system("flatpak permission-set kde-authorized remote-desktop org.kde.konsole yes")
++            self.vncserver = subprocess.Popen(["krfb","--nodialog"])
+         # Running `xdg-screensaver reset` as root doesn't reset the D.E.
+         # screensaver, so send the reset command to both epoptes processes
+         self.exec_on_selected_clients(
+@@ -399,6 +435,7 @@ class EpoptesGui(object):
+         self.exec_on_selected_clients(
+             #'receive_broadcast "${GUI_IP}:%d" "%s" %s' % (self.vncserver_port,
+             #self.vncserver_pwd, fullscreen), mode=EM_SYSTEM_OR_SESSION)
++            self.vncserver_port=5900
+             ["receive_broadcast", str(class_ip)+":"+str(self.vncserver_port), self.vncserver_pwd,
+             fullscreen], mode=EM_SYSTEM_OR_SESSION)
+         #END LLIUREX
