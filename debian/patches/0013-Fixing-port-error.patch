@@ -1,0 +1,26 @@
+From: daduve <daduve@gmail.com>
+Date: Wed, 7 Oct 2026 00:17:45 +0200
+Subject: Fixing port error
+
+---
+ epoptes/ui/gui.py | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/epoptes/ui/gui.py b/epoptes/ui/gui.py
+index 1f2b6ed..7173d49 100644
+--- a/epoptes/ui/gui.py
++++ b/epoptes/ui/gui.py
+@@ -430,12 +430,11 @@ class EpoptesGui(object):
+         # screensaver, so send the reset command to both epoptes processes
+         self.exec_on_selected_clients(
+             ['reset_screensaver'], mode=EM_SYSTEM_AND_SESSION)
+-
++        self.vncserver_port=5900
+         # START LLIUREX
+         self.exec_on_selected_clients(
+             #'receive_broadcast "${GUI_IP}:%d" "%s" %s' % (self.vncserver_port,
+             #self.vncserver_pwd, fullscreen), mode=EM_SYSTEM_OR_SESSION)
+-            self.vncserver_port=5900
+             ["receive_broadcast", str(class_ip)+":"+str(self.vncserver_port), self.vncserver_pwd,
+             fullscreen], mode=EM_SYSTEM_OR_SESSION)
+         #END LLIUREX
