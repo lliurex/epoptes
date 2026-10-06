@@ -1,0 +1,29 @@
+From: daduve <daduve@gmail.com>
+Date: Tue, 6 Oct 2026 22:45:38 +0200
+Subject: lliurex twisted
+
+---
+ twisted/plugins/epoptesd.py | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/twisted/plugins/epoptesd.py b/twisted/plugins/epoptesd.py
+index 7735493..8b189b4 100644
+--- a/twisted/plugins/epoptesd.py
++++ b/twisted/plugins/epoptesd.py
+@@ -86,10 +86,15 @@ class ServiceMaker(object):
+             os.makedirs(config.system['DIR'], 0o2770)
+         os.chmod(config.system['DIR'], 0o2770)
+         os.chown(config.system['DIR'], -1, gid)
+-
++        #LLIUREX
++        gui_service = internet.TCPServer(
++            10000,
++            guiplex.GUIFactory())
++        '''
+         gui_service = internet.UNIXServer(
+             "%s/epoptes.socket" % config.system['DIR'],
+             guiplex.GUIFactory())
++        '''
+ 
+         top_service = service.MultiService()
+         top_service.addService(client_service)
