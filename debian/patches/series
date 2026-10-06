@@ -5,3 +5,4 @@
 0005-lliurex-gui.patch
 0006-fix-groups-for-CDC.patch
 0007-read-correctly-user-groups.patch
+0008-check-if-its-natfree.patch
