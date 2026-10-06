@@ -1,0 +1,38 @@
+From: daduve <daduve@gmail.com>
+Date: Tue, 6 Oct 2026 22:57:49 +0200
+Subject: fix groups for CDC
+
+---
+ bin/epoptes | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/bin/epoptes b/bin/epoptes
+index 7095a12..f113244 100755
+--- a/bin/epoptes
++++ b/bin/epoptes
+@@ -7,6 +7,7 @@ Launch the epoptes UI.
+ """
+ import getpass
+ import grp
++import pwd
+ import os
+ import os.path
+ import socket
+@@ -66,10 +67,15 @@ def need_sg_relaunch(is_member=None):
+         return False
+     if not is_member:
+         try:
+-            epoptes_members = grp.getgrnam(config.system['SOCKET_GROUP']).gr_mem
++            #START LLIUREX
++            #epoptes_members = grp.getgrnam(config.system['SOCKET_GROUP']).gr_mem
++            user=getpass.getuser()
++            gid = pwd.getpwnam(user).pw_gid
++            groups_gids = os.getgrouplist(user, gid)
++            user_groups = [ grp.getgrgid(x).gr_name for x in groups_gids ]
+         except KeyError:
+             return False
+-        if getpass.getuser() not in epoptes_members:
++        if config.system['SOCKET_GROUP'] not in  user_groups:
+             return False
+     else:
+         return False
