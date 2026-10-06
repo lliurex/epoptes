@@ -1,0 +1,42 @@
+From: daduve <daduve@gmail.com>
+Date: Tue, 6 Oct 2026 23:19:20 +0200
+Subject: fixed small errors
+
+---
+ epoptes/ui/gui.py | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/epoptes/ui/gui.py b/epoptes/ui/gui.py
+index 5d124c3..6bc08a7 100644
+--- a/epoptes/ui/gui.py
++++ b/epoptes/ui/gui.py
+@@ -515,6 +515,8 @@ class EpoptesGui(object):
+                     #c.block((self.n4d_user,self.n4d_password),"IptablesManager","",ip)
+                     #natfree or not
+                     if os.path.exists("/usr/bin/nfctl"):
++                        key=list(client[C_INSTANCE].users)[0]
++                        c=n4dclient.ServerProxy("https://%s:9779"%ip,context=context,allow_none=True)
+                         user=client[C_INSTANCE].users[key]["uname"]
+                         c.block((self.n4d_user,self.n4d_password),"IptablesManager",user)
+                     else:
+@@ -547,8 +549,18 @@ class EpoptesGui(object):
+                     import xmlrpc.client as n4dclient
+                     import ssl
+                     context=ssl._create_unverified_context()
+-                    c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
+-                    c.unblock((self.n4d_user,self.n4d_password),"IptablesManager","",ip)
++                    #START LLIUREX
++                    #c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
++                    #c.unblock((self.n4d_user,self.n4d_password),"IptablesManager","",ip)
++                    if os.path.exists("/usr/bin/nfctl"):
++                        key=list(client[C_INSTANCE].users)[0]
++                        c=n4dclient.ServerProxy("https://%s:9779"%ip,context=context,allow_none=True)
++                        user=client[C_INSTANCE].users[key]["uname"]
++                        print(c.unblock((self.n4d_user,self.n4d_password),"IptablesManager",user))
++                    else:
++                        c=n4dclient.ServerProxy("https://server:9779",context=context,allow_none=True)
++                        c.unblock((self.n4d_user,self.n4d_password),"IptablesManager","",ip)
++                    #END LLIUREX
+                 except Exception as e:
+                     print(str(e))
+ 
