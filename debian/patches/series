@@ -8,3 +8,4 @@
 0008-check-if-its-natfree.patch
 0009-fixed-small-errors.patch
 0010-disable-wake-on-lan.patch
+0011-wayland-support-via-krfb.patch
