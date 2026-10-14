@@ -1,0 +1,53 @@
+From: daduve <daduve@gmail.com>
+Date: Wed, 14 Oct 2026 14:30:09 +0200
+Subject: Disable wayland test gui
+
+---
+ epoptes/ui/gui.py | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/epoptes/ui/gui.py b/epoptes/ui/gui.py
+index 7173d49..5bb9962 100644
+--- a/epoptes/ui/gui.py
++++ b/epoptes/ui/gui.py
+@@ -334,7 +334,7 @@ class EpoptesGui(object):
+         class_ip = self.getClassroomIp()
+         if class_ip == None:
+             class_ip = "server"
+-            self.exec_on_selected_clients([cmd, str(class_ip)+":"+str(self.vncviewer_port)] + list(args))
++            self.exec_on_selected_clients([cmd, str(class_ip)+":"+str(self.vncviewer_port)] + list(args), reply=self.execute_wl_viewer)
+         #END LLIUREX
+     
+     def execute_wl_viewer(self,handle,reply,assist=False):
+@@ -383,21 +383,21 @@ class EpoptesGui(object):
+         #END LLIUREX
+         if self.vncserver is None:
+             # wayland, x11, tty
+-            if os.getenv('XDG_SESSION_TYPE', '') == 'wayland':
+-                self.warning_dialog("Screen broadcasting isn't supported on Wayland")
+-                return
++            #if os.getenv('XDG_SESSION_TYPE', '') == 'wayland':
++                #self.warning_dialog("Screen broadcasting isn't supported on Wayland")
++                #return
+             # https://tigervnc.org/doc/vncpasswd.html
+             # ...only the first eight characters are significant
+-            pwd = ''.join(random.sample(
+-                string.ascii_letters + string.digits, 8))
++            #pwd = ''.join(random.sample(
++                #string.ascii_letters + string.digits, 8))
+             pwdfile = config.expand_filename('vncpasswd')
+             # DES-encrypted: https://github.com/trinitronx/vncpasswd.py
+-            subprocess.call(['x11vnc', '-storepasswd', pwd, pwdfile])
+-            with open(pwdfile, 'rb') as file:
+-                pwdcrypted = file.read()
++            #subprocess.call(['x11vnc', '-storepasswd', pwd, pwdfile])
++            #with open(pwdfile, 'rb') as file:
++                #pwdcrypted = file.read()
+             # Octal-escaped crypted password, needed by VNC clients
+-            self.vncserver_pwd = ''.join('\\%o' % c for c in pwdcrypted)
+-            self.vncserver_port = self.find_unused_port(5900)
++            #self.vncserver_pwd = ''.join('\\%o' % c for c in pwdcrypted)
++            #self.vncserver_port = self.find_unused_port(5900)
+             # START LLIUREX
+             class_ip = self.getClassroomIp()
+             if class_ip == None:
