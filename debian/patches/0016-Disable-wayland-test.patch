@@ -1,0 +1,21 @@
+From: daduve <daduve@gmail.com>
+Date: Wed, 14 Oct 2026 14:27:53 +0200
+Subject: Disable wayland test
+
+---
+ data/client-functions | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/data/client-functions b/data/client-functions
+index 8bd396a..3255d8d 100644
+--- a/data/client-functions
++++ b/data/client-functions
+@@ -271,7 +271,7 @@ thumbshot() {
+     # TODO: remove compatibility fallback after a few versions
+     local executable
+ 
+-    test -z "$WAYLAND_DISPLAY" || return 0
++    #test -z "$WAYLAND_DISPLAY" || return 0
+     if [ -f "./thumbshot.py" ]; then
+         executable=./thumbshot.py
+     else
