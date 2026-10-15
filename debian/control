@@ -69,7 +69,8 @@ Recommends:
  x11-utils,
  x11-xserver-utils,
  x11vnc,
- xterm
+ xterm,
+ n4d-krfbmanager
 Suggests: ethtool
 Description: Computer lab management tool (client)
  Epoptes is an open source computer lab management and monitoring tool. It
