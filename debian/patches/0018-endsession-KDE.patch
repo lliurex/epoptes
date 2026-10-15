@@ -1,0 +1,26 @@
+From: daduve <daduve@gmail.com>
+Date: Thu, 15 Oct 2026 12:42:57 +0200
+Subject: endsession KDE
+
+---
+ epoptes-client/endsession | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/epoptes-client/endsession b/epoptes-client/endsession
+index 5d43382..f9f9b53 100755
+--- a/epoptes-client/endsession
++++ b/epoptes-client/endsession
+@@ -38,9 +38,10 @@ do_logout() {
+       org.gnome.SessionManager.Logout uint32:1 2>&1 && return
+ 
+     # KDE
+-    dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
+-      --dest=org.kde.ksmserver /KSMServer org.kde.KSMServerInterface.logout \
+-      int32:0 int32:0 int32:0 2>&1 && return
++    qdbus6 org.kde.Shutdown /Shutdown logout 2>&1 && return
++    #dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
++      #--dest=org.kde.ksmserver /KSMServer org.kde.KSMServerInterface.logout \
++      #int32:0 int32:0 int32:0 2>&1 && return
+ 
+     # Mate
+     dbus-send --session --type=method_call --print-reply --reply-timeout=2000 \
