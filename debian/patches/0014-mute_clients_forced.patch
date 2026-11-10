@@ -1,0 +1,89 @@
+From: daduve <daduve@gmail.com>
+Date: Tue, 10 Nov 2026 19:20:34 +0100
+Subject: mute_clients_forced
+
+---
+ data/client-functions | 17 +++++++++++++++--
+ epoptes/ui/gui.py     | 24 ++++++++++++++++++++----
+ 2 files changed, 35 insertions(+), 6 deletions(-)
+
+diff --git a/data/client-functions b/data/client-functions
+index b6d5506..ef8800d 100644
+--- a/data/client-functions
++++ b/data/client-functions
+@@ -274,21 +274,34 @@ unlock_screen() {
+ # Mute the system sound.
+ # Parameters:
+ # $1 = seconds to keep sound muted, 0 means forever - currently ignored.
+-mute_sound() {
++'''mute_sound() {
+     if [ -x /usr/bin/pactl ]; then
+         background pactl set-sink-mute @DEFAULT_SINK@ 1
+     elif [ -x /usr/bin/amixer ]; then
+         background amixer -c 0 -q sset Master mute
+     fi
++}'''
++# Mute the system sound for a session user (runs as root).
++# Parameters:
++# $1 = session user name.
++mute_sound() {
++    test "$UID" -eq 0 || return 0
++    test -n "$1" || return 0
++    lliurex-mute start "$1" >/dev/null 2>&1 &
+ }
+ 
+ # Unute the system sound.
+-unmute_sound() {
++'''unmute_sound() {
+     if [ -x /usr/bin/pactl ]; then
+         background pactl set-sink-mute @DEFAULT_SINK@ 0
+     elif [ -x /usr/bin/amixer ]; then
+         background amixer -c 0 -q sset Master unmute
+     fi
++}'''
++unmute_sound() {
++    test "$UID" -eq 0 || return 0
++    test -n "$1" || return 0
++    lliurex-mute stop "$1" >/dev/null 2>&1 &
+ }
+ 
+ # Start a network benchmark and print its pid.
+diff --git a/epoptes/ui/gui.py b/epoptes/ui/gui.py
+index 6adc65a..c0f4a84 100644
+--- a/epoptes/ui/gui.py
++++ b/epoptes/ui/gui.py
+@@ -547,14 +547,30 @@ class EpoptesGui(object):
+         self.exec_on_selected_clients(
+             ['mute_sound', 0], mode=EM_SYSTEM_OR_SESSION)
+         '''
+-        self.exec_on_selected_clients(
+-            ['mute_sound', 0], mode=EM_SYSTEM_AND_SESSION)
++        '''self.exec_on_selected_clients(
++            ['mute_sound', 0], mode=EM_SYSTEM_AND_SESSION)'''
++        """Handle imi_restrictions_mute_sound.activate event."""
++        self.lliurex_mute('mute_sound')
+          # END LLIUREX
+       
+     def on_imi_restrictions_unmute_sound_activate(self, _widget):
+         """Handle imi_restrictions_unmute_sound.activate event."""
+-        self.exec_on_selected_clients(
+-            ['unmute_sound'], mode=EM_SYSTEM_AND_SESSION)
++        '''self.exec_on_selected_clients(
++            ['unmute_sound'], mode=EM_SYSTEM_AND_SESSION)'''
++        """Handle imi_restrictions_unmute_sound.activate event."""
++        self.lliurex_mute('unmute_sound')
++
++    def lliurex_mute(self, cmd):
++        """Send mute/unmute to the root client, passing the session user."""
++        clients = self.get_selected_clients()
++        if not clients:  # No client selected, send the command to all
++            clients = self.cstore
++        for client in clients:
++            inst = client[C_INSTANCE]
++            if inst.type == 'offline' or not client[C_SESSION_HANDLE]:
++                continue
++            user = inst.users[client[C_SESSION_HANDLE]]['uname']
++            self.exec_on_clients([cmd, user], [client], mode=EM_SYSTEM)
+ 
+     def on_imi_clients_add_to_group_activate(self, _widget, group):
+         """Handle *dynamic* imi_clients_add_to_group.activate event."""
