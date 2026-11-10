@@ -1,3 +1,9 @@
+epoptes (1:20.01-1~ubuntu20.04.3+lliurex10) jammy; urgency=medium
+
+  * Mute clients forced 
+
+ -- Daniel Duran <daduve@gmail.com>  Tue, 10 Nov 2026 19:21:34 +0100
+
 epoptes (1:20.01-1~ubuntu20.04.3+lliurex9) jammy; urgency=medium
 
   * Disable Wake on LAN button.
