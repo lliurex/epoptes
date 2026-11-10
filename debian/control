@@ -56,6 +56,7 @@ Depends: ${python3:Depends}, ${misc:Depends},
  iproute2 | iproute,
  procps,
  screen,
+ lliurex-mute,
  socat,
 Recommends:
  gir1.2-gtk-3.0,
